@@ -54,15 +54,18 @@ vep --cache --dir_cache $VEP_CACHE \
 ```
 LC_ALL=C zgrep -E '^#|SNV|insertion|deletion' biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.gz > biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
 ```
+- Get a smaller version of annotated VCF, for later figure plotting :
+```function_biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz```
+
+```
+bcftools +split-vep biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz -f '%CHROM %POS %REF %ALT %Existing_variation %Consequence %VARIANT_CLASS %IMPACT %MAX_AF %MAX_AF_POPS \n' -s worst > function_biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
+## check by wc -l == 35725453 lines
+```
 
 - Fig.4A get needed column from whole VEP annotated Turkish file
-```
-bcftools +split-vep biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz \n
--f '%CHROM %POS %REF %ALT %Existing_varicdation %VARIANT_CLASS \n' -d > small_biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
 
-### need to remove the duplicated records.
-zless -S small_biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.txt.gz | awk '!a[$1$2$3$4]++' > rm_dup_small_biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.txt
-```
+
+
 - get Allele frequencies count for Turkish cohort
 ```
 vcftools --gzvcf biallelic-275-samples-Merged-add-ref-parameter.vcf.gz --freq --out freq_biallelic
@@ -76,10 +79,8 @@ LC_ALL=C grep -Ev '/*' freq_biallelic.frq >freq_biallelic_rm_missing.frq
 ```
 
 2. Fig.4B Consequences drawing, with most severe
-```
-### now is running this
-bcftools +split-vep biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz -f '%CHROM %POS %REF %ALT %Existing_variation %Consequence %VARIANT_CLASS %IMPACT %MAX_AF %MAX_AF_POPS \n' -s worst > function_biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
-```
+
+
 
 ### conda (recommended)
 
