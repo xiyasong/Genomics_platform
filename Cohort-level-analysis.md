@@ -1,4 +1,4 @@
-## Cohort-level variants findings and ploting
+## Cohort-level variants findings and ploting ---Swedish
 - preparing building index files for all passed VCF files
 ```
 for F in *.vcf.gz ; do tabix -f -p vcf ${F} ; done
@@ -18,7 +18,14 @@ bcftools merge *.vcf.gz -Oz -o 101-samples-Merged-add-ref-parameter.vcf.gz --for
 ```
 bcftools norm -a -m -any 101-samples-Merged-add-ref-parameter.vcf.gz | bgzip > biallelic-101-samples-Merged-add-ref-parameter.vcf.gz
 ```
+
+- (only for Swedish) remove the old VEP annotation:
+```
+zless -S biallelic-101-samples-Merged-add-ref-parameter.vcf.gz| grep -Ev "^#" | awk '{print $8}' | perl -npe 's/CSQ=.*\|;?//' > biallelic-101-samples-Merged-add-ref-parameter.rmvep.vcf.gz
+```
+
 - Annotate the whole VCF file by VEP (UPPMAX) to get the file:```biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.gz```
+
 ```
 vep --cache --dir_cache $VEP_CACHE \
 --fork 9 \
@@ -45,9 +52,7 @@ LC_ALL=C zgrep -E '^#|SNV|insertion|deletion' biallelic-101-samples-Merged-add-r
 bcftools +split-vep biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz -f '%CHROM %POS %REF %ALT %Existing_variation %Consequence %VARIANT_CLASS %IMPACT %MAX_AF %MAX_AF_POPS \n' -s worst > function_biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
 ```
 
-- Fig.4A get needed column from whole VEP annotated Swedish file
-
-- get Allele frequencies count for Turkish cohort
+- get Allele frequencies count for Swedish cohort
 ```
 vcftools --gzvcf biallelic-101-samples-Merged-add-ref-parameter.vcf.gz --freq --out freq_biallelic_101
 ```
@@ -59,5 +64,4 @@ LC_ALL=C grep -Ev '/*' freq_biallelic_101.frq >freq_biallelic_rm_missing_101.frq
 #### A total of ________ -1(header line) = ________ distinct alternate alleles
 ```
 
-2. Fig.4B Consequences drawing, with most severe
 
