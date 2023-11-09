@@ -8,7 +8,7 @@ for F in *.vcf.gz ; do tabix -f -p vcf ${F} ; done
 
 1.**Per-sample** variants statistics for autosomes is not running because we are not the sequencer
 
-2. **Cohort-level** statistics to get the frequency table
+2.**Cohort-level** statistics to get the frequency table
 locate in ```/Users/xiyas/pgsc_calc/vcf_swedish_passed_data_101```
 - Merge all samples to a whole VCF file
 ```
@@ -41,14 +41,12 @@ vep --cache --dir_cache $VEP_CACHE \
 LC_ALL=C zgrep -E '^#|SNV|insertion|deletion' biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.gz > biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
 ```
 
-- Fig.4A get needed column from whole VEP annotated Swedish file
 ```
-bcftools +split-vep biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz \n
--f '%CHROM %POS %REF %ALT %Existing_varicdation %VARIANT_CLASS \n' -d > small_biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
+bcftools +split-vep biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz -f '%CHROM %POS %REF %ALT %Existing_variation %Consequence %VARIANT_CLASS %IMPACT %MAX_AF %MAX_AF_POPS \n' -s worst > function_biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
+```
 
-### need to remove the duplicated records.
-zless -S small_biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.txt.gz | awk '!a[$1$2$3$4]++' > rm_dup_small_biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.txt
-```
+- Fig.4A get needed column from whole VEP annotated Swedish file
+
 - get Allele frequencies count for Turkish cohort
 ```
 vcftools --gzvcf biallelic-101-samples-Merged-add-ref-parameter.vcf.gz --freq --out freq_biallelic_101
@@ -62,7 +60,4 @@ LC_ALL=C grep -Ev '/*' freq_biallelic_101.frq >freq_biallelic_rm_missing_101.frq
 ```
 
 2. Fig.4B Consequences drawing, with most severe
-```
-### now is running this
-bcftools +split-vep biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz -f '%CHROM %POS %REF %ALT %Existing_variation %Consequence %VARIANT_CLASS %IMPACT %MAX_AF %MAX_AF_POPS \n' -s worst > function_biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
-```
+
