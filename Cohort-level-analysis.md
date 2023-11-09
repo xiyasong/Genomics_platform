@@ -91,7 +91,23 @@ bcftools norm -a -m -any 101-samples-Merged-add-ref-parameter.vcf.gz | bgzip > b
 
 - (only for Swedish) remove the old VEP annotation:
 ```
-zless -S biallelic-101-samples-Merged-add-ref-parameter.vcf.gz| grep -Ev "^#" | awk '{print $8}' | perl -npe 's/CSQ=.*\|;?//' > biallelic-101-samples-Merged-add-ref-parameter.rmvep.vcf.gz
+#rm_old_vep.sh
+zless -S $1 | grep -E "^#" > ${1}_header.vcf
+
+echo "get passed variants and also remove previous vep annotation"
+zless -S $1 | grep -Ev "^#" |grep -E "PASS" | perl -npe 's/CSQ=.*\|;//' > ${1}.rmvep.PASS.vcf
+
+echo "combine two files"
+cat ${1}_header.vcf ${1}.rmvep.PASS.vcf > ${1}.rmvep.merged.PASS.vcf
+
+#echo "bgzip"
+#bgzip ${1}.rmvep.merged.PASS.vcf >  ${1}.rmvep.merged.PASS.vcf.gz
+
+echo "move files to /dir_rm_old_vep"
+mv ${1}.rmvep.merged.PASS.vcf dir_rm_old_vep/
+
+echo "remove unneeded files"
+rm ${1}_header.vcf ${1}.rmvep.PASS.vcf
 ```
 
 - Annotate the whole VCF file by VEP (UPPMAX) to get the file:```biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.gz```
