@@ -6,10 +6,11 @@ A repository for the preparing manuscript "A platform for genomic data analysis,
 
 ------------------------------------------------------------------------
 
-## Cohort-level variants findings and ploting
-
 ### For Turkish cohort (n=275)
-1.**Per-sample** variants statistics for autosomes
+
+## Per-sample(autosomes) statistics 
+Results file in ```/Users/xiyas/pgsc_calc/vcf_turkish-with-merge/autosome_filtered```
+**Per-sample** variants statistics for autosomes
 
 - Get variants on autosomes region only
 ```
@@ -22,7 +23,9 @@ for FILE in *.txt;do less -S $FILE | grep '^TSTV' >> sum_tstv.txt;done
 for FILE in *.txt;do less -S $FILE | grep 'number of records:' >> sum_count.txt;done
 ```
 
-2. **Cohort-level** statistics
+## Cohort-level variants findings and ploting
+
+**Cohort-level** statistics
 locate in ```/Users/xiyas/pgsc_calc/vcf_turkish_passed_data_275```
 - Merge all samples to a whole VCF file
 ```
@@ -54,17 +57,13 @@ vep --cache --dir_cache $VEP_CACHE \
 ```
 LC_ALL=C zgrep -E '^#|SNV|insertion|deletion' biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.gz > biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
 ```
-- Get a smaller version of annotated VCF, for later figure plotting :
+- Fig.4A Get a smaller version of annotated VCF, for later figure plotting
 ```function_biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz```
 
 ```
 bcftools +split-vep biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz -f '%CHROM %POS %REF %ALT %Existing_variation %Consequence %VARIANT_CLASS %IMPACT %MAX_AF %MAX_AF_POPS \n' -s worst > function_biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
 ## check by wc -l == 35725453 lines
 ```
-
-- Fig.4A get needed column from whole VEP annotated Turkish file
-
-
 
 - get Allele frequencies count for Turkish cohort
 ```
@@ -77,9 +76,6 @@ less -S freq_biallelic.frq | wc -l
 LC_ALL=C grep -Ev '/*' freq_biallelic.frq >freq_biallelic_rm_missing.frq
 #### A total of 35725454 -1(header line) = 35,725,453 distinct alternate alleles
 ```
-
-2. Fig.4B Consequences drawing, with most severe
-
 
 
 ### conda (recommended)
