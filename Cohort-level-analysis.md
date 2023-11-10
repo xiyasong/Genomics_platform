@@ -92,19 +92,15 @@ bcftools norm -a -m -any 101-samples-Merged-add-ref-parameter.vcf.gz | bgzip > b
 - (only for Swedish) remove the old VEP annotation:
 ```
 #rm_old_vep.sh
-zless -S $1 | grep -E "^#" > ${1}_header.vcf
+zgrep -E "^#" $1  > ${1}_header.vcf
 
 echo "get passed variants and also remove previous vep annotation"
-zless -S $1 | grep -Ev "^#" |grep -E "PASS" | perl -npe 's/CSQ=.*\|;//' > ${1}.rmvep.PASS.vcf
+
+zgrep -E "^[^#].*PASS" $1  | perl -pe 's/CSQ=.*?;//' > ${1}.rmvep.PASS.vcf
 
 echo "combine two files"
 cat ${1}_header.vcf ${1}.rmvep.PASS.vcf > ${1}.rmvep.merged.PASS.vcf
 
-#echo "bgzip"
-#bgzip ${1}.rmvep.merged.PASS.vcf >  ${1}.rmvep.merged.PASS.vcf.gz
-
-echo "move files to /dir_rm_old_vep"
-mv ${1}.rmvep.merged.PASS.vcf dir_rm_old_vep/
 
 echo "remove unneeded files"
 rm ${1}_header.vcf ${1}.rmvep.PASS.vcf
