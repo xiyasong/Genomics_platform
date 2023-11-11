@@ -142,7 +142,7 @@ vcftools --gzvcf biallelic-101-samples-Merged-add-ref-parameter.vcf.gz --freq --
 ```
 less -S freq_biallelic_101.frq | wc -l
 #### A total of ________ lines before removing missing alt alleles
-LC_ALL=C grep -Ev '/*' freq_biallelic_101.frq >freq_biallelic_rm_missing_101.frq
+grep -Ev '/*' freq_biallelic_101.frq >freq_biallelic_rm_missing_101.frq
 #### A total of ________ -1(header line) = ________ distinct alternate alleles
 ```
 
