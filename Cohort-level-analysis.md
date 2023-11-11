@@ -106,7 +106,7 @@ echo "remove unneeded files"
 rm ${1}_header.vcf ${1}.rmvep.PASS.vcf
 ```
 
-- Annotate the whole VCF file by VEP (UPPMAX) to get the file:```biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.gz```
+- Annotate the whole VCF file by VEP (UPPMAX) to get the file:```biallelic-101-samples-Merged-add-ref-parameter.vcf.gz.rmvep.merged.PASS.annotated.vcf.gz```
 
 ```
 vep --cache --dir_cache $VEP_CACHE \
@@ -127,7 +127,7 @@ vep --cache --dir_cache $VEP_CACHE \
 ```biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz```
 
 ```
-LC_ALL=C zgrep -E '^#|SNV|insertion|deletion' biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.gz > biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
+LC_ALL=C zgrep -E '^#|SNV|insertion|deletion' biallelic-101-samples-Merged-add-ref-parameter.vcf.gz.rmvep.merged.PASS.annotated.vcf.gz > biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
 ```
 
 ```
