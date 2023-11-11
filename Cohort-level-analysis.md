@@ -129,6 +129,7 @@ vep --cache --dir_cache $VEP_CACHE \
 ```
 LC_ALL=C zgrep -E '^#|SNV|insertion|deletion' biallelic-101-samples-Merged-add-ref-parameter.vcf.gz.rmvep.merged.PASS.annotated.vcf.gz > biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
 ```
+
 - Get a smaller version of annotated VCF, for later figure plotting
 ```
 bcftools +split-vep biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz -f '%CHROM %POS %REF %ALT %Existing_variation %Consequence %VARIANT_CLASS %IMPACT %MAX_AF %MAX_AF_POPS \n' -s worst > function_biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz
@@ -141,9 +142,9 @@ vcftools --gzvcf biallelic-101-samples-Merged-add-ref-parameter.vcf.gz --freq --
 - Check the amounts and remove missing alt alleles
 ```
 less -S freq_biallelic_101.frq | wc -l
-#### A total of ________ lines before removing missing alt alleles
+#### A total of 23158099 lines before removing missing alt alleles
 grep -Ev '/*' freq_biallelic_101.frq >freq_biallelic_rm_missing_101.frq
-#### A total of ________ -1(header line) = ________ distinct alternate alleles
+#### A total of 20085549 -1(header line) = 20085548 distinct alternate alleles
 ```
 
 
