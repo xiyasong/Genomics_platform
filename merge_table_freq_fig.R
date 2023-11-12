@@ -9,8 +9,10 @@ dev.off()
 library(patchwork)
 
 # Reading files =============
-setwd('/Users/xiyas/pgsc_calc/vcf_turkish-with-merge')
-var_info <- fread('function_biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz',header = FALSE,sep=' ')
+#setwd('/Users/xiyas/pgsc_calc/vcf_turkish-with-merge')
+setwd('/Users/xiyas/pgsc_calc/vcf-swedish-with-merge')
+#var_info <- fread('function_biallelic-275-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz',header = FALSE,sep=' ')
+var_info <- fread('function_biallelic-101-samples-Merged-add-ref-parameter.vcf.gz_vep_annotated.vcf.rm.missing.gz',header = FALSE,sep=' ')
 var_info <-distinct(var_info)
 colnames(var_info) <- c('CHROM','POS','REF','ALT','rs_id','Consequence','type','IMPACT','MAX_AF','MAX_AF_POPS')
 var_info$Consequence <- sapply(strsplit(var_info$Consequence,"&"), `[`, 1)
@@ -35,15 +37,10 @@ legend_labels <- c("insertion" = "INS", "deletion" = "DEL", 'SNV' = 'SNV')
 
 ## Get a copy dataframe ============
 var_info_test <- var_info
-# Reorder the levels of 'Consequence' based on the count in descending order
-# Create a summary of the data, ordering it by the count of 'Consequence' in descending order
-consequence_counts <- var_info_test %>%
-  group_by(rs_id_category, Consequence,type) %>%
-  summarize(Count = n())
-var_info_test$Consequence <- factor(var_info_test$Consequence, levels =consequence_counts$Consequence)
 
 ########Frequency plot. Figure 4A ===============
-freq <- fread('freq_biallelic.rm.missing.frq.gz')
+#freq <- fread('freq_biallelic.rm.missing.frq.gz')
+freq <- fread('freq_biallelic_rm_missing_101.frq.gz')
 colnames(freq) <- c('CHROM','POS','N_ALLELS','N_CHR','REF_AF','ALT_AF')
 freq <- freq %>%
   mutate(
@@ -56,7 +53,8 @@ freq <- freq %>%
 merge_table_ori <-merge(freq,var_info,all=TRUE,by = c('CHROM','POS','REF','ALT'))
 
 
-# Define the conditions and group labels
+# Define the conditions and group labels ==============
+## Turkish ==============
 merge_table_ori <- merge_table_ori %>%
   mutate(group = case_when(
     ALT_AF %in% c(0.00181818) ~ "AC =1",
@@ -79,7 +77,25 @@ merge_table_ori <- merge_table_ori %>%
     TRUE ~ "Other"
   )) 
 
-
+## Swedish ==============
+merge_table_ori <- merge_table_ori %>%
+  mutate(group = case_when(
+    ALT_AF %in% c(0.0049505) ~ "AC =1",
+    ALT_AF %in% c(0.00990099) ~ "AC=2",
+    (ALT_AF > 0.01 & ALT_AF <= 0.05) ~ "0.01<AF<=0.05",
+    (ALT_AF > 0.05 & ALT_AF <= 0.15) ~ "0.05<AF<=0.15",
+    (ALT_AF > 0.15 & ALT_AF <= 0.25) ~ "0.15<=AF<=0.25",
+    (ALT_AF > 0.25 & ALT_AF <= 0.35) ~ "0.25<=AF<=0.35",
+    (ALT_AF > 0.35 & ALT_AF <= 0.45) ~ "0.35<=AF<=0.45",
+    (ALT_AF > 0.45 & ALT_AF <= 0.55) ~ "0.45<=AF<=0.55",
+    (ALT_AF > 0.55 & ALT_AF <= 0.65) ~ "0.55<=AF<=0.65",
+    (ALT_AF > 0.65 & ALT_AF <= 0.75) ~ "0.65<=AF<=0.75",
+    (ALT_AF > 0.75 & ALT_AF <= 0.85) ~ "0.75<=AF<=0.85",
+    (ALT_AF > 0.85 & ALT_AF <= 0.95) ~ "0.85<=AF<=0.95",
+    (ALT_AF > 0.95 & ALT_AF < 1) ~ "0.95<AF<1",
+    ALT_AF %in% c(1) ~ "AF=1",
+    TRUE ~ "Other"
+  ))
 desired_levels <- c(
   "AC =1", "AC=2", "AC=3","AC=4","AC=5",
   "0.01<AF<=0.05", "0.05<AF<=0.15", "0.15<=AF<=0.25",
@@ -97,7 +113,8 @@ merge_table$MAX_AF_Category <- factor(merge_table$MAX_AF_Category, levels = c(
 ))
 # Modify specific legend labels
 #legend_labels <- c("insertion" = "INS", "deletion" = "DEL", 'SNV' = 'SNV')
-write.table(merge_table, file= 'merge_table.txt',quote = FALSE,sep = '\t', row.names = FALSE)
+#write.table(merge_table, file= 'merge_table.txt',quote = FALSE,sep = '\t', row.names = FALSE)
+write.table(merge_table, file= 'merge_table_swe.txt',quote = FALSE,sep = '\t', row.names = FALSE)
 
 # Figure 4A ggplot ============
 ggplot(merge_table, aes(x = group,fill=MAX_AF_Category)) +
@@ -123,7 +140,10 @@ ggplot(merge_table, aes(x = group,fill=MAX_AF_Category)) +
     legend.text = element_text(size = 16))+
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   coord_flip()
-ggsave("/Users/xiyas/V2_Genome_reporting/Plots/Allele_frequencies_Figure4A.pdf",height = 10,width =20)
+
+
+#ggsave("/Users/xiyas/V2_Genome_reporting/Plots/Allele_frequencies_Figure4A.pdf",height = 10,width =20)
+ggsave("/Users/xiyas/V2_Genome_reporting/Plots/Allele_frequencies_Figure4A_swe.pdf",height = 10,width =20)
 
 
 # Figure 4B ===========
@@ -266,5 +286,5 @@ combined_plot <- gg_1 + gg_3+ gg_2 + plot_layout(nrow = 3, heights = c(10,2,1)) 
 print(combined_plot)
 
 # Save the plot as a PDF file
-ggsave("/Users/xiyas/V2_Genome_reporting/Plots/Figure_4B_Novel_Low_Total.pdf", width = 9, height = 7)
-
+#ggsave("/Users/xiyas/V2_Genome_reporting/Plots/Figure_4B_Novel_Low_Total.pdf", width = 9, height = 7)
+ggsave("/Users/xiyas/V2_Genome_reporting/Plots/Figure_4B_Novel_Low_Total_swe.pdf", width = 9, height = 7)
