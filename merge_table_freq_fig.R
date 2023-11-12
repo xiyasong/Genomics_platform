@@ -125,7 +125,15 @@ ggplot(merge_table, aes(x = group,fill=MAX_AF_Category)) +
   coord_flip()
 ggsave("/Users/xiyas/V2_Genome_reporting/Plots/Allele_frequencies_Figure4A.pdf",height = 10,width =20)
 
+
 # Figure 4B ===========
+
+ori_order <- var_info_test %>%
+  group_by(Consequence) %>%
+  summarize(Count = n())%>%
+  arrange(desc(Count))
+
+
 var_info_test <- var_info_test %>%
   mutate(conse_group = case_when(
     Consequence == 'intron_variant' ~ "intronic",
@@ -133,7 +141,7 @@ var_info_test <- var_info_test %>%
     Consequence %in% c('upstream_gene_variant', 'downstream_gene_variant') ~ "regulatory",
     Consequence == '3_prime_utr_variant' ~ "3'-UTR",
     Consequence == '5_prime_utr_variant' ~ "5'-UTR",
-    Consequence == 'frameshift_variant ' ~ "frameshift-variant ",
+    Consequence == 'frameshift_variant' ~ "frameshift-variant ",
     Consequence == 'missense_variant' ~ "missense",
     Consequence == 'synonymous_variant' ~ "synonymous",
     grepl('splice', Consequence) ~ "splice-region",  # Checking if 'splice' is in Consequence
@@ -166,7 +174,7 @@ MAX_AF_0.05_proportions <- var_info_test %>%
   arrange(desc(Count))
 
 re_consequence_proportions <- left_join(consequence_proportions, order, by = "conse_group")
-re_consequence_proportions <- re_consequence_proportion %>%
+re_consequence_proportions <- re_consequence_proportions %>%
   mutate(Novel_Ratio = Count.x / Count.y)
 
 re_MAX_proportions <- left_join(MAX_AF_0.05_proportions, order, by = "conse_group")
@@ -203,7 +211,8 @@ gg_1 <- ggplot(consequence_counts, aes(x = conse_group, y = Count)) +
     legend.text = element_text(size = 14))
 
 gg_1
-# Add a second facet grid for Novel ratios
+
+# Add a second facet grid for Novel
 
 gg_2 <- ggplot(re_consequence_proportions, aes(x = conse_group, y = Novel_Ratio)) +
   geom_bar(stat = 'identity',fill= "steelblue1") +
@@ -228,6 +237,7 @@ gg_2 <- ggplot(re_consequence_proportions, aes(x = conse_group, y = Novel_Ratio)
 
 gg_2
 
+# Add a second facet grid for Low Freq
 gg_3 <- ggplot(re_MAX_proportions, aes(x = conse_group, y = MAX_Ratio)) +
   geom_bar(stat = 'identity',fill= "orange2") +
   theme_bw()+ 
