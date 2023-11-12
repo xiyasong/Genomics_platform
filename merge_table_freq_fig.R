@@ -177,7 +177,7 @@ consequence_counts$conse_group <- factor(consequence_counts$conse_group, levels 
 re_consequence_proportions$conse_group <- factor(re_consequence_proportions$conse_group, levels =unique(order$conse_group))
 re_MAX_proportions$conse_group <- factor(re_MAX_proportions$conse_group, levels =unique(order$conse_group))
 
-# igure 4B ggplot ============
+# Figure 4B ggplot ============
 # Create the facet grid plot with two separate facets for counts and Novel ratios
 gg_1 <- ggplot(consequence_counts, aes(x = conse_group, y = Count)) +
   geom_bar(stat = 'identity',fill= "mediumpurple3") +
