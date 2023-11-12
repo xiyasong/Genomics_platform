@@ -147,4 +147,8 @@ grep -Ev '/*' freq_biallelic_101.frq >freq_biallelic_rm_missing_101.frq
 #### A total of 20085549 -1(header line) = 20085548 distinct alternate alleles
 ```
 
+## **LAST STEP: generate Figures**
+```merge_table_freq_fig.R```
+
+
 
