@@ -76,6 +76,12 @@ btyper3 -i /path/to/genome.fasta -o /path/to/desired/output_directory
 ```
 
 
+| Gene     | Variant            | Type       | Zygosity | Individuals | Frequency |
+|----------|--------------------|------------|-----------|-------------|-----------|
+| TTN      | rs12345, c.123A>T  | ClinVar P  | HET       | 8           | 2.9%      |
+| LDLR     | rs67890, c.456C>G  | pLoF       | HOM       | 1           | 0.4%      |
+| ABCA4    | rs54321, c.789G>A  | ClinVar LP | HET       | 3           | 1.1%      |
+| ...      | ...                | ...        | ...       | ...         | ...       |
 
 ------------------------------------------------------------------------
 
