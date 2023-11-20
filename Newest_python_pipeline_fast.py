@@ -40,7 +40,7 @@ import numpy as np
 import os
 
 # 1. choose which enviroment running local uppmax, SZA
-path = 'SZA'
+path = 'local'
 
 # 2. choose which cohort belongs to, Turkish or Swedish
 cohort = 'Turkish'
@@ -54,16 +54,17 @@ if path == 'local':
     fileName = '/Users/xiyas/V2_Genome_reporting/Sample_data/P113873_barcode_P113873_P113873fam_sorted_md_brecal_gvcf_vrecal_comb_vt_vep_BOTH_filtered.vcf.gz.rmvep.merged.PASS.vcf.gz_vep_annotated.vcf'
     #fileName= '/Users/xiyas/V2_Genome_reporting/Sample_data/P001_10.hard-filtered.vcf.gz_vep_annotated.vcf'
     output_directory = "/Users/xiyas/V2_Genome_reporting/python_output_turkish_275/Other"
-    outFile = os.path.join(output_directory, 'test_your_pipeline.txt')
+    outFile = os.path.join(output_directory, 'test_your_pipeline_new_diseaseinfo.txt')
 
     # ##define the name for the output file
     geneBaseFile = '/Users/xiyas/V2_Genome_reporting/database-file-v2/GeneDB.txt'
-    diseaesDBfile = '/Users/xiyas/V2_Genome_reporting/database-file-v2/DiseaseDB_version_2_Beta_curated.txt'
+    #diseaesDBfile = '/Users/xiyas/V2_Genome_reporting/database-file-v2/DiseaseDB_version_2_Beta_curated.txt'
+    diseaesDBfile = '/Users/xiyas/V2_Genome_reporting/database-file-v2/diseaseDB_1115_3.txt'
     OMIM_inheritance_DBfile = '/Users/xiyas/V2_Genome_reporting/database-file-v2/pheno_OMIM_all.txt'
     variantSumFile = "/Users/xiyas/V2_Genome_reporting/database-file-v2/All_variant_summary2_ver2.txt"
 
     #Read disease and inheritance DB
-    DiseaseDB = pd.read_csv(diseaesDBfile, sep="\t",encoding='unicode_escape')
+    DiseaseDB = pd.read_csv(diseaesDBfile, sep="\t",encoding="ISO-8859-1")
     DiseaseDB= DiseaseDB.replace(np.nan,"No info")
     OMIM_Inheritance_DB = pd.read_csv(OMIM_inheritance_DBfile,sep="\t",dtype={"phenotypeMimNumber": str})
     OMIM_Inheritance_DB['inheritances'] = OMIM_Inheritance_DB['inheritances'].replace(np.nan,"Inheritance Not provided by OMIM")
@@ -73,9 +74,11 @@ if path == 'local':
     if run_GWAS_Pharmaco == True:
         GWAS_dbfile = '/Users/xiyas/V2_Genome_reporting/database-file-v2/Merged_GWAS_vcf.txt'
         Pharma_dbfile = '/Users/xiyas/V2_Genome_reporting/database-file-v2/Merged_Pharma_vcf.txt'
-        Trait_dbfile = '/Users/xiyas/V2_Genome_reporting/database-file-v2/Reports_genome_databases_traits.xlsx'
-        Trait_db =pd.read_excel(Trait_dbfile)
+        Trait_dbfile = '/Users/xiyas/V2_Genome_reporting/database-file-v2/Reports_genome_databases_traits.txt'
+        Trait_db =pd.read_csv(Trait_dbfile,sep="\t",encoding = "ISO-8859-1")
+        Trait_db = Trait_db.dropna(axis=1, how='all')
         Trait_db= Trait_db.replace(np.nan,"No info")
+
         trait_list=Trait_db['variants'].to_list()
         GWAS_db =pd.read_csv(GWAS_dbfile, sep="\t")
         GWAS_db= GWAS_db.replace(np.nan,"No info")
@@ -105,9 +108,11 @@ elif path == 'uppmax':
     if run_GWAS_Pharmaco == True:
         GWAS_dbfile = '/proj/snic2020-16-69/nobackup/WGS_SZA/database-file-v2/Merged_GWAS_vcf.txt'
         Pharma_dbfile = '/proj/snic2020-16-69/nobackup/WGS_SZA/database-file-v2/Merged_Pharma_vcf.txt'
-        Trait_dbfile = '/proj/snic2020-16-69/nobackup/WGS_SZA/database-file-v2/Reports_genome_databases_traits.xlsx'
-        Trait_db =pd.read_excel(Trait_dbfile)
+        Trait_dbfile = '/proj/snic2020-16-69/nobackup/WGS_SZA/database-file-v2/Reports_genome_databases_traits.txt'
+        Trait_db =pd.read_csv(Trait_dbfile,sep="\t",encoding = "ISO-8859-1")
+        Trait_db = Trait_db.dropna(axis=1, how='all')
         Trait_db= Trait_db.replace(np.nan,"No info")
+
         trait_list=Trait_db['variants'].to_list()
         GWAS_db =pd.read_csv(GWAS_dbfile, sep="\t")
         GWAS_db= GWAS_db.replace(np.nan,"No info")
@@ -400,12 +405,15 @@ for i in range(0,len(reportA)):
                             jVarDiseaseNames.append(DiseaseName_DSDB[kIndex[0]])
                     #sys.exit('!')
                     ## problem here!!! (should match Clinvar disease type?)
-                    ## test
+                    ## fixed by if SZAdiseaseID_GDB[jInds[k]] in jVarSZAdiseaseIDs: SZAdiseaseID_GDB is the disease from GeneDB, to see
+                    # whether it's matching with the ClinVar_CLNDN disease jVarSZAdiseaseIDs
                     for k in range(0,len(jInds)):
                         if SZAdiseaseID_GDB[jInds[k]] in jVarSZAdiseaseIDs:
                             #SZAscore =0
                             #print(SZAscore)
                             if ConfidenceLevel[jInds[k]] == 'High_confidence':
+                                #print('SZAdiseaseID_GDB[jInds[k]]=',SZAdiseaseID_GDB[jInds[k]])
+                                #print(' jVarSZAdiseaseIDs=',jVarSZAdiseaseIDs)
                                 SZAscore = 10+scoreFlag
                             elif ConfidenceLevel[jInds[k]] == 'Moderate_confidence':
                                 SZAscore = 5+scoreFlag
@@ -842,11 +850,7 @@ with open(outFile_sp,'r') as f1:
                 iheritance = "No matched diseaseMIM in OMIM/OMIM not provided Inheritance"
         #iDiseaseInfo writing" now only use the column named OMIM_Description in the disease database
         #iDiseaseInfo = "Disease description(MONDO):" +DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['Mondo_Description'].to_list()[0]+ '|' + "Disease description(OMIM):" +DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['OMIM_Description'].to_list()[0]+ '|' + "Reference:"+ "DiseaseName:" + DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['DiseaseName'].to_list()[0]+ '|' + "DiseaseSource:" + DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['SourceName'].to_list()[0]+'|' +"Disease SourceID:" +DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['SourceID'].to_list()[0]+'|' + "OMIM number:"+ DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['DiseaseMIM'].to_list()[0]
-        iDiseaseInfo = DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['OMIM_Description'].to_list()[0]+ '|' + \
-        "Reference:"+ "DiseaseName:" + DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['DiseaseName'].to_list()[0]+ '|' + \
-        "DiseaseSource:" + DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['SourceName'].to_list()[0]+'|' + \
-        "Disease SourceID:" +DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['SourceID'].to_list()[0]+'|' + \
-        "OMIM number:"+ DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['DiseaseMIM'].to_list()[0]
+        iDiseaseInfo = DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['OMIM_Description'].to_list()[0]+ '|' + "Reference:"+ "DiseaseName:" + DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['DiseaseName'].to_list()[0]+ '|' + "DiseaseSource:" + DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['SourceName'].to_list()[0]+'|' +"Disease SourceID:" +DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['SourceID'].to_list()[0]+'|' + "OMIM number:"+ DiseaseDB[DiseaseDB['SZAdiseaseID']== iSZAdiseaseID]['DiseaseMIM'].to_list()[0]
         line = line + "\t" + iheritance +"\t"+iDiseaseInfo
         with open((outFile_sp_Inheritance),'a') as f2:
             f2.write(line+ '\n')
@@ -855,9 +859,11 @@ with open(outFile_sp,'r') as f1:
 ### 8.7 add a nodup4 file that contains all the matching records
 final_report_sp_Inheritance  = pd.read_csv(outFile_sp_Inheritance, sep="\t",dtype=str)
 #final_report_general_1 = final_report_sp_Inheritance[final_report_sp_Inheritance['SZAreportCategory'].isin(['14','15'])]
-#final_report_general_1 = final_report_general_1[["Target.group","Disease","ClinVar_CLNDN","Genes","SZAID","Existing_variation","VARIANT_CLASS","Consequence","ClinVar_CLNHGVS","#CHROM","POS","ClinVar","REF","ALT","ClinVar_CLNSIG","Inheritances","DiseaseInfo","Zygosity","ClinVar_GENEINFO"]]
+#    final_report_general_1 = final_report_general_1[["Target.group","Disease","ClinVar_CLNDN","Genes","SZAID","Existing_variation","VARIANT_CLASS","Consequence","ClinVar_CLNHGVS","#CHROM","POS","ClinVar","REF","ALT","ClinVar_CLNSIG","Inheritances","DiseaseInfo","Zygosity","ClinVar_GENEINFO"]]
 #final_report_general_2 = final_report_sp_Inheritance[final_report_sp_Inheritance['SZAreportCategory'].isin(['14','15','9','10'])]
-#final_report_general_2 = final_report_general_2[["Target.group","Disease","ClinVar_CLNDN","Genes","SZAID","Existing_variation","VARIANT_CLASS","Consequence","ClinVar_CLNHGVS","#CHROM","POS","ClinVar","REF","ALT","ClinVar_CLNSIG","Inheritances","DiseaseInfo","Zygosity","ClinVar_GENEINFO"]]
+
+#Those line is to only keep selected columns based on the apps need
+#inal_report_general_2 = final_report_general_2[["Target.group","Disease","ClinVar_CLNDN","Genes","SZAID","Existing_variation","VARIANT_CLASS","Consequence","ClinVar_CLNHGVS","#CHROM","POS","ClinVar","REF","ALT","ClinVar_CLNSIG","Inheritances","DiseaseInfo","Zygosity","ClinVar_GENEINFO"]]
 final_report_general_3 = final_report_sp_Inheritance[final_report_sp_Inheritance['SZAreportCategory'].isin(['6','7','8','9','10','11','12','13','14','15'])]
 #final_report_general_3 = final_report_general_3[["Target.group","Disease","ClinVar_CLNDN","Genes","SZAID","Existing_variation","VARIANT_CLASS","Consequence","ClinVar_CLNHGVS","#CHROM","POS","ClinVar","REF","ALT","ClinVar_CLNSIG","Inheritances","DiseaseInfo","Zygosity","ClinVar_GENEINFO"]]
 final_report_general_4 = final_report_sp_Inheritance
@@ -874,9 +880,9 @@ print("the file named _sp_Inheritance generated: XXX_sp_Inheritance_1.txt,XXX_sp
 #os.remove(outFile_sp_Inheritance) # As same as final_report_general_4,_sp_Inheritance_4.txt
 #print(f"{outFile_sp_Inheritance} has been successfully deleted.")
 
-#%% Cell 11 generate nodup files
+#%% Cell 11 def append_data function
 
-#colNames = list(final_report_general_2.columns)
+colNames = list(final_report_sp_Inheritance.columns)
 def append_data_to_lists(iline, iTargetGroup, iDisease, iGene, iSZAID, iExisting_variation, iCHROM, iPOS,
                                          iZygosity, iREF, iALT, iID, iClinvar_CLNSIG, iVARIANT_CLASS, iConsequence,
                                          iClinVar_CLNHGVS, iheritance, iVariantINFO, iDiseaseInfo, iSZAreportCategory):
@@ -929,10 +935,8 @@ VariantINFO =[]
 SZAreportCategory =[]
 
 
-#%%Cell 12 ###Remove the duplicated features
+#%%Cell 12 def Remove the duplicated features fuction
 def rm_duplicates(dupfile,nodupfile):
-    dupfile_col  = pd.read_csv(dupfile, sep="\t",dtype=str)
-    colNames = list(dupfile_col.columns)
     with open(dupfile,'r') as f:
         #skip the title
         next(f)
@@ -962,6 +966,7 @@ def rm_duplicates(dupfile,nodupfile):
                 iDisease = temp[colNames.index('Disease')]
             if iDisease == '':
                 sys.exit()
+                #continue
             iTargetGroup = temp[colNames.index('Target.group')]
             if iTargetGroup == '':
                 iTargetGroup = 'Expanded_clinvar_mono_diseases'
@@ -1001,14 +1006,15 @@ def rm_duplicates(dupfile,nodupfile):
 
 #write nodup file
     with open(nodupfile,'w') as f:
-        colNames_new = ["final_target_group"] + colNames + ["Variant_info"]
+        #print('okkk')
+        colNames_new = ["final_target_group"] + colNames
         f.write("\t".join(colNames_new)+"\n")
         #f.write(line + "\n")
         #f.write('\t'.join(['Target group','Sub-group','Phenotype','Gene','SZAvarID','RS ID','VariantType','VariantTrans','HGVS','VariantINFO','CHROM','POS','ID','REF','ALT','NOTE','Disease information','Prevalence','Inheritance'])+'\n')
         for j in range(0,len(Disease)):
             if TargetGroup[j] in ['Health predipositions/Disease risk','Carrier-screening','Heriditary-cancer risk syndrome','Newborn-screening'] :
                 #f.write('Basic (for healthy subjects)\tUsually used for:'+ TargetGroup[j]+'\t'+Disease[j]+'\t'+Gene[j]+'\t'+SZAID[j]+'\t'+ Existing_variation[j] +'\t' +VARIANT_CLASS[j]+ '\t' + Zygosity[j] +'\t'+ ClinVar_CLNHGVS[j]+ '\t' + VariantINFO[j] +'\t' +CHROM[j]+'\t'+POS[j]+'\t'+ ID[j] +'\t'+ REF[j]+'\t'+ ALT[j]+'\t'+ ClinVar_CLNSIG[j]+'\t'+ DiseaseInfo[j]+'\t'+ 'Not_provided'+ '\t'+ Inheritances[j] +'\n')
-                f.write('Basic (for healthy subjects),Usually used for:'+ TargetGroup[j]+'\t' + line_list[j] + "\n")
+                f.write('Basic (for healthy subjects),Usually used for:'+ TargetGroup[j]+'\t' + line_list[j] +"\n")
                 #f.write('Basic (for healthy subjects)\tUsually used for:'+TargetGroup[j]+'\t'+Disease[j]+'\t'+Gene[j]+'\t'+SZAID[j]+'\t'+'Not provided\tNot provided\tNot provided\tNot provided\t'+Genotype[j]+'\t'+CHROM[j]+'\t'+POS[j]+'\t'+'Not provided\tNot provided\tNot provided\t'+'Pathogenic/Likely pathogenic'+'\tTBD\tTBD\n')
             elif TargetGroup[j] in ['Expanded_clinvar_mono_diseases','Expanded_mono_rare_diseases']:
                 #f.write('Extended (for potential patients)\t'+ TargetGroup[j]+'\t'+Disease[j]+'\t'+Gene[j]+'\t'+SZAID[j]+'\t'+ Existing_variation[j] +'\t' +VARIANT_CLASS[j]+ '\t' + Zygosity[j] +'\t'+ ClinVar_CLNHGVS[j]+ '\t' + VariantINFO[j] +'\t' +CHROM[j]+'\t'+POS[j]+'\t'+ ID[j] +'\t'+ REF[j]+'\t'+ ALT[j]+'\t'+ ClinVar_CLNSIG[j]+'\t'+ DiseaseInfo[j]+'\t'+ 'Not_provided'+ '\t'+ Inheritances[j] +'\n')
@@ -1030,19 +1036,24 @@ def rm_duplicates(dupfile,nodupfile):
 #             f.write('Extended (for potential patients)\t'+ TargetGroup[j]+'\t'+Disease[j]+'\t'+Gene[j]+'\t'+SZAID[j]+'\t'+ Existing_variation[j] +'\t' +VARIANT_CLASS[j]+ '\t' + Zygosity[j] +'\t'+ ClinVar_CLNHGVS[j]+ '\t' + VariantINFO[j] +'\t' +CHROM[j]+'\t'+POS[j]+'\t'+ ID[j] +'\t'+ REF[j]+'\t'+ ALT[j]+'\t'+ ClinVar_CLNSIG[j]+'\t'+ DiseaseInfo[j]+'\t'+ 'Not_provided'+ '\t'+ Inheritances[j] +'\n')
 #             #f.write('Extended (for potential patients)\t' + TargetGroup[j]+'\t' + VariantINFO[j] +'\t' +  line_list[j] + "\n"
 
-#%%=========== main ==============
+#%%cell 13 main 
 
 # input files
-#dupfile = outFile.replace('.txt','_sp_Inheritance_4.txt')
-dupfile = outFile.replace('.txt','_sp_Inheritance_3.txt')
-nodupfile = outFile.replace('.txt','_sp_Inheritance_3_nodup.txt')
-rm_duplicates(dupfile,nodupfile)
-print("generated no dup file,", nodupfile)
 
 dupfile = outFile.replace('.txt','_sp_Inheritance_4.txt')
 nodupfile = outFile.replace('.txt','_sp_Inheritance_4_nodup.txt')
+
 rm_duplicates(dupfile,nodupfile)
 print("generated no dup file,", nodupfile)
+
+dupfile2 = outFile.replace('.txt','_sp_Inheritance_3.txt')
+nodupfile2 = outFile.replace('.txt','_sp_Inheritance_3_nodup.txt')
+rm_duplicates(dupfile2,nodupfile2)
+print("generated no dup file,", nodupfile2)
+
+
+
+
 
 
 
@@ -1068,7 +1079,7 @@ Gene_ref.pop(0)
 
 # generate variant summary table for the sample
 print("generating variant summary table for the sample")
-print("only the variants score as 9,10,14,15, Clinvar P/LP variants in HIGH/MODERATE confidence disases")
+print("only the variants score as 9,10,14,15, Clinvar P/LP variants in HIGH/MODERATE confidence disases in the variant summary file")
 
 TargetGroup = []
 Disease = []
