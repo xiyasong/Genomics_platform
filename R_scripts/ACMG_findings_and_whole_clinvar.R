@@ -46,10 +46,17 @@ customize_temp_data <- function(data) {
   return(data)
 }
 
-# Function to get the pathogenic variants that suits for writing, to differ with reporting files ------------------
+# Function to get the pathogenic variants plus HIGH impact LoFs that suits for writing, to differ with reporting files ------------------
 get_P_LP_LoFs <- function(data){
   data <- data %>% filter(X.CHROM != 'chrM') %>% filter(MAX_AF < 0.05 | is.na(MAX_AF)) %>%
   filter(ClinVar_CLNSIG == 'Pathogenic' | ClinVar_CLNSIG == 'Likely_pathogenic' | IMPACT == "HIGH")
+  return(data)
+}
+
+# Function to get the pathogenic variants that suits for writing, to differ with reporting files ------------------
+get_P_LP <- function(data){
+  data <- data %>% filter(X.CHROM != 'chrM') %>% filter(MAX_AF < 0.05 | is.na(MAX_AF)) %>%
+  filter(ClinVar_CLNSIG == 'Pathogenic' | ClinVar_CLNSIG == 'Likely_pathogenic')
   return(data)
 }
 
