@@ -5,6 +5,7 @@
 # combined_df = combined_df
 # sorted_tab_old = clinvar_TR_unique + freq calculation
 
+
 # Function to read files and process data -----------------
 read_and_process_files <- function(path, population) {
   setwd(path)
@@ -35,6 +36,13 @@ customize_temp_data <- function(data) {
                                  Genes %in% AD_genes & Zygosity == "Heterozygous" ~ "Positive",
                                  Genes %in% AR_genes & Zygosity == "Heterozygous" ~ "Carrier",
                                  TRUE ~ "Unsure"))
+  data <- data %>%
+    mutate(MAX_AF_Category = case_when(
+      is.na(MAX_AF) ~ "No public MAX_AF",
+      MAX_AF < 0.01 ~ "Public MAX_AF < 0.01",
+      (0.01 < MAX_AF) & (MAX_AF < 0.05) ~ "0.01 < Public MAX_AF < 0.05",
+      MAX_AF >= 0.05 ~ "Public MAX_AF >= 0.05"
+    ))
   return(data)
 }
 
@@ -75,6 +83,24 @@ get_unique_variants <- function(data) {
   return(data)
 }
 
+#  functions to get sorted_tab --------------
+library(dplyr)
+
+get_sorted_tab <- function(data, unique_data) {
+  sorted_tab <- data %>%
+    group_by(SZAID, Zygosity) %>%
+    summarise(count = n()) %>%
+    arrange(desc(count)) %>%
+    merge(unique_data, by = 'SZAID', all.x = TRUE)
+  
+  sorted_tab_old <- data %>%
+    group_by(SZAID) %>%
+    summarise(Freq = n()) %>%
+    arrange(desc(Freq)) %>%
+    merge(unique_data, by = 'SZAID', all.x = TRUE) 
+  
+  return(list(sorted_tab = sorted_tab, sorted_tab_old = sorted_tab_old))
+}
 # Process Turkish data -----------------
 df_temp_turkish <- read_and_process_files("/Users/xiyas/V2_Genome_reporting/python_output_turkish_275/nodup_4_file", "Turkish")
 df_temp_turkish <- customize_temp_data(df_temp_turkish)
@@ -88,7 +114,7 @@ sillico_pLoFs_unique_TR <- get_unique_variants(sillico_pLoFs)
 ACMG_TR <- get_ACMG_findings(df_temp_turkish)
 ACMG_TR_unique <- get_unique_SZAID(ACMG_TR)
 
-
+sorted_tab_TR <- get_sorted_tab(clinvar_TR, clinvar_TR_unique)
 
 # Process Swedish data -----------------
 df_temp_swedish <- read_and_process_files("/Users/xiyas/V2_Genome_reporting/python_output_swedish_101/nodup4_file", "Swedish")
@@ -103,7 +129,7 @@ sillico_pLoFs_unique_SW <- get_unique_variants(sillico_pLoFs_SW)
 ACMG_SW <- get_ACMG_findings(df_temp_swedish)
 ACMG_SW_unique <- get_unique_SZAID(ACMG_SW)
 
-
+sorted_tab_SW <- get_sorted_tab(clinvar_SW, clinvar_SW_unique)
 
 # Combine the two data frames into one -----------------
 combined_df <- rbind(clinvar_TR,clinvar_SW)
