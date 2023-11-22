@@ -204,7 +204,9 @@ ggsave("/Users/xiyas/V2_Genome_reporting/Plots/Gene_variant_count_stacked_plot_d
 
 
 ###For the df_clinvar_filter --------------
-## you table with SZAID and table with SZAID will show different results.
+## you table with SZAID and table with Variant_info will show different results.
+
+### sorted_tab_TR_filter$sorted_tab_old_filter = df_clinvar_filter_Summary
 test<- as.data.frame(table(df_clinvar_filter$SZAID))
 
 colnames(test)[1]<- "SZAID"
