@@ -60,6 +60,11 @@ get_P_LP <- function(data){
   return(data)
 }
 
+get_P_LP <- function(data){
+  data <- data %>% filter(X.CHROM != 'chrM') %>% filter(MAX_AF < 0.05 | is.na(MAX_AF)) %>%
+    filter(ClinVar_CLNSIG == 'Pathogenic' | ClinVar_CLNSIG == 'Likely_pathogenic')
+  return(data)
+}
 # Function to get all ClinVar variants -----------------
 get_clinvar_variants <- function(data) {
   data <- data %>% filter(grepl("ClinP_LP_var", Database_type))
