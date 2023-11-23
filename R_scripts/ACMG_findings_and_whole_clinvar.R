@@ -24,7 +24,9 @@ read_and_process_files <- function(path, population) {
 
 # Function to keep the first pathogenicity data,add condition judgement, rm chrM etc -----------------
 customize_temp_data <- function(data) {
-  cols <- c("X.CHROM", "POS", "Genotype")
+  #cols <- c("X.CHROM", "POS", "Genotype")
+  cols <- c("X.CHROM", "POS", "REF",'ALT')
+  #sillico_pLoFs_TR$SZAID_assign <- apply(sillico_pLoFs_TR[, cols], 1, paste, collapse = "-")
   data$POS <- gsub(" ", "", data$POS)
   data$Variant_info <- apply(data[, cols], 1, paste, collapse = "-")
   data$ClinVar_CLNSIG <- sapply(strsplit(data$ClinVar_CLNSIG, "&"), `[`, 1)
@@ -115,7 +117,7 @@ clinvar_TR <- get_clinvar_variants(df_temp_turkish)
 clinvar_TR_unique <- get_unique_SZAID(clinvar_TR)
 
 sillico_pLoFs_TR <- get_other_sillico_pLoFs(df_temp_turkish)
-sillico_pLoFs_unique_TR <- get_unique_variants(sillico_pLoFs)
+sillico_pLoFs_unique_TR <- get_unique_variants(sillico_pLoFs_TR)
 
 ACMG_TR <- get_ACMG_findings(df_temp_turkish)
 ACMG_TR_unique <- get_unique_SZAID(ACMG_TR)
@@ -129,7 +131,7 @@ sorted_tab_TR_filter =list(sorted_tab_filter = get_P_LP(sorted_tab_TR$sorted_tab
                            sorted_tab_old_filter = get_P_LP(sorted_tab_TR$sorted_tab_old))
 
 # sillico variants
-sorted_tab_TR_sillico <- get_sorted_tab(sillico_pLoFs_TR, sillico_pLoFs_unique_TR)
+#sorted_tab_TR_sillico <- get_sorted_tab(sillico_pLoFs_TR, sillico_pLoFs_unique_TR)
 
 # Process Swedish data -----------------
 df_temp_swedish <- read_and_process_files("/Users/xiyas/V2_Genome_reporting/python_output_swedish_101/nodup4_file", "Swedish")
@@ -151,7 +153,7 @@ sorted_tab_SW <- get_sorted_tab(clinvar_SW, clinvar_SW_unique)
 sorted_tab_SW_filter =list(sorted_tab_filter = get_P_LP(sorted_tab_SW$sorted_tab),
                            sorted_tab_old_filter = get_P_LP(sorted_tab_SW$sorted_tab_old))
 # sillico variants
-sorted_tab_SW_sillico <- get_sorted_tab(sillico_pLoFs_SW, sillico_pLoFs_unique_SW)
+#sorted_tab_SW_sillico <- get_sorted_tab(sillico_pLoFs_SW, sillico_pLoFs_unique_SW)
 
 # Combine the two data frames into one -----------------
 combined_df <- rbind(clinvar_TR,clinvar_SW)
