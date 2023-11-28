@@ -4,6 +4,8 @@
 # df_puta =sillico_pLoFs_TR
 # combined_df = combined_df
 # sorted_tab_old = clinvar_TR_unique + freq calculation
+# sorted_tab_TR_sillico
+# sorted_tab_SW_sillico
 
 
 # Function to read files and process data -----------------
@@ -109,6 +111,21 @@ get_sorted_tab <- function(data, unique_data) {
   return(list(sorted_tab = sorted_tab, sorted_tab_old = sorted_tab_old))
 }
 
+get_sorted_tab_sillico <- function(data, unique_data) {
+  sorted_tab_sillico <- data %>%
+    group_by(Variant_info, Zygosity) %>%
+    summarise(count = n()) %>%
+    arrange(desc(count)) %>%
+    merge(unique_data, by = 'Variant_info', all.x = TRUE)
+  
+  sorted_tab_old_sillico <- data %>%
+    group_by(Variant_info) %>%
+    summarise(Freq = n()) %>%
+    arrange(desc(Freq)) %>%
+    merge(unique_data, by = 'Variant_info', all.x = TRUE) 
+  
+  return(list(sorted_tab_sillico = sorted_tab_sillico, sorted_tab_old_sillico = sorted_tab_old_sillico))
+}
 # Process Turkish data -----------------
 df_temp_turkish <- read_and_process_files("/Users/xiyas/V2_Genome_reporting/python_output_turkish_275/nodup_4_file", "Turkish")
 df_temp_turkish <- customize_temp_data(df_temp_turkish)
@@ -131,7 +148,9 @@ sorted_tab_TR_filter =list(sorted_tab_filter = get_P_LP(sorted_tab_TR$sorted_tab
                            sorted_tab_old_filter = get_P_LP(sorted_tab_TR$sorted_tab_old))
 
 # sillico variants
-#sorted_tab_TR_sillico <- get_sorted_tab(sillico_pLoFs_TR, sillico_pLoFs_unique_TR)
+sorted_tab_TR_sillico <- get_sorted_tab_sillico(sillico_pLoFs_TR, sillico_pLoFs_unique_TR)
+
+# sillico no need to fileter
 
 # Process Swedish data -----------------
 df_temp_swedish <- read_and_process_files("/Users/xiyas/V2_Genome_reporting/python_output_swedish_101/nodup4_file", "Swedish")
@@ -153,7 +172,7 @@ sorted_tab_SW <- get_sorted_tab(clinvar_SW, clinvar_SW_unique)
 sorted_tab_SW_filter =list(sorted_tab_filter = get_P_LP(sorted_tab_SW$sorted_tab),
                            sorted_tab_old_filter = get_P_LP(sorted_tab_SW$sorted_tab_old))
 # sillico variants
-#sorted_tab_SW_sillico <- get_sorted_tab(sillico_pLoFs_SW, sillico_pLoFs_unique_SW)
+sorted_tab_SW_sillico <- get_sorted_tab_sillico(sillico_pLoFs_SW, sillico_pLoFs_unique_SW)
 
 # Combine the two data frames into one -----------------
 combined_df <- rbind(clinvar_TR,clinvar_SW)
