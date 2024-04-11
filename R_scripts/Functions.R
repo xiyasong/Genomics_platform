@@ -124,3 +124,26 @@ get_sorted_tab_sillico <- function(data, unique_data) {
   
   return(list(sorted_tab_sillico = sorted_tab_sillico, sorted_tab_old_sillico = sorted_tab_old_sillico))
 }
+
+read_GWAS <- function(path) {
+  setwd(path)
+  files <- list.files(path = path, pattern = "_GWAS.txt")
+  list_temp <- lapply(files, function(file) {
+    temp <- read.delim(file)
+    temp <- temp[!duplicated(temp$SZAvarID), ]
+    temp$patientID <- rep(file)
+    return(temp)
+  })
+  return(do.call(rbind, list_temp))
+}
+read_pharmaco <- function(path) {
+  setwd(path)
+  files <- list.files(path = path, pattern = "_pharmaco.txt")
+  list_temp <- lapply(files, function(file) {
+    temp <- read.delim(file)
+    temp <- temp[!duplicated(temp$SZAvarID), ]
+    temp$patientID <- rep(file)
+    return(temp)
+  })
+  return(do.call(rbind, list_temp))
+}
