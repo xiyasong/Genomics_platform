@@ -40,7 +40,6 @@ In the result file page, clicking "Back" will returns to the list of all samples
 8. **Export whole sample-specific Results (CSV format)**  
 This button allows downloading a CSV file of raw result file of the specific sample.  
 
-
 <img width="1199" alt="image" src="https://github.com/user-attachments/assets/2204ecae-714d-4468-ab8c-f9aaac48e65d" />
 
 9. **Sample-based view page**  
@@ -51,8 +50,9 @@ From the button **1** or button **7**, users will return to a page showing all s
 ### CNVs/SVs investigation based on DECIPHER database
 <img width="1197" alt="image" src="https://github.com/user-attachments/assets/4458a96a-8810-4613-9ce5-a4effa740842" />
 1. **The search tab for the genes/regions of interest**
-3. **Quick examples of searching formats**  
+2. **Quick examples of searching formats**  
 Here, we provided 3 different ways of searching: 1) by gene name 2) by band information and 3) by chromosome positions. Clicking any of them will automatically applies the example search and showing the searching results.
-4.
+3. **Checking CNV/SVs records from _DECIPHER_**
+After 
 
 <img width="1186" alt="image" src="https://github.com/user-attachments/assets/de2768dd-0fcf-4742-9f87-5320efedadea" />
