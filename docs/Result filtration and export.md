@@ -1,5 +1,7 @@
 Once the job finishes, a `done` is marked on the job. Results could be viewed in the portal either in `PDF View` or `Raw Data`.
 
+
+
 **PDF View**
 
 Results with clinical importance are formatted into the PDF report and previewed in the portal. The report contains the following contents:
@@ -12,7 +14,10 @@ Results with clinical importance are formatted into the PDF report and previewed
 
 The PDF report can be exported by clicking the exporting button on the top right corner and saved to local.
 
-![](/Users/xinmengliao/Library/Application%20Support/marktext/images/2025-01-30-16-06-16-image.png)
+![image](https://github.com/user-attachments/assets/ce92062d-616c-43dc-b581-920ce92abeee)
+
+
+
 
 **Raw Data**
 
@@ -26,4 +31,4 @@ The filtration section provides genes or gene list filtration. Results related t
 
 Eventually, all data are able to export in `.xlsx` format to local.
 
-![](/Users/xinmengliao/Library/Application%20Support/marktext/images/2025-01-30-16-05-46-image.png)
+![image](https://github.com/user-attachments/assets/87b59e5d-5364-4ad8-bafd-462277ed0eb4)
