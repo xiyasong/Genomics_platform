@@ -11,5 +11,19 @@ nav:
 
 theme:
   name: material
+  features:
+    - navigation.tabs
+    - navigation.top
+    - search.suggest
+    - toc.integrate
 
 # (Optional) Extra configuration can go here
+plugins:
+  - search  # 启用搜索功能
+
+extra_css:
+  - stylesheets/extra.css  # 可选：自定义 CSS
+
+markdown_extensions:
+  - toc:
+      permalink: true  # 为标题添加链接锚点
