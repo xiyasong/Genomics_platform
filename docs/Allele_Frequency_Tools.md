@@ -1,4 +1,4 @@
-# Allele Frequency Tools  
+![image](https://github.com/user-attachments/assets/d0b12757-23b0-4249-8bf4-a0f2e26f60f0)# Allele Frequency Tools  
 
 ## Introduction of the tool  
 
@@ -16,11 +16,13 @@ By clicking this button, a list of all uploaded files (by sample name) are shown
   
 2. **Export all calculation results of in-house allele frequencies**  
 The calculation is based on the formula:
-<img width="961" alt="image" src="https://github.com/user-attachments/assets/2b04e9d4-284d-4876-8d70-d91519acf2e3" />
-To be more specific, 
-3. **Search / Scrolling tab**
-4. 
+Allele Frequency = Total allele count of the SNP / 2* (Total Number of Individuals) whereas Total allele count is calculated referring the heterozygous/homozygous status of the variant.
 
+4. **Search / Scrolling tab**
+Here, by searching (input the chromosome location of the variants that interested) and scrolling the user is able to view all variants detected.
+
+5.**Export variant-specific results** 
+This button allows downloading of a CSV file including all the sample IDs that carrying the specific variant being searched. 
 
 
 <img width="1051" alt="image" src="https://github.com/user-attachments/assets/ba737f00-7deb-44e1-8065-e7d706c4881b" />
