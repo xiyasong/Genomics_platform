@@ -4,8 +4,8 @@ site_url: "https://xiyasong.github.io/Genomics_platform"  # optional
 
 nav:
   - Home: index.md
-  - Quick start for BabyGenePro: "Quick start for BabyGenePro.md"
   - Quick start for GenRiskPro: "Quick start for GenRiskPro.md"
+  - Quick start for BabyGenePro: "Quick start for BabyGenePro.md"
   - In-house Reference Panel: "In-house Reference Panel.md"
   - Result filtration and export: "Result filtration and export.md"
 
