@@ -1,4 +1,4 @@
-# Allele Frequency Tools  
+# In-house Reference Panel
 
 ## Introduction of the tool  
 
