@@ -16,3 +16,6 @@ This tool is used as a "blueprint" of all variants that found in the in-house up
 
 All of SNPs are named as the format chr:pos:Ref/Alt, the percentage indicated the newest calculated allele frequency. 
 
+-2. CNVs/SVs investigation based on DECIPHER database
+<img width="1197" alt="image" src="https://github.com/user-attachments/assets/4458a96a-8810-4613-9ce5-a4effa740842" />
+
