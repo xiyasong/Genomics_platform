@@ -50,8 +50,9 @@ From the button **1** or button **7**, users will return to a page showing all s
 ---
 ### CNVs/SVs investigation based on DECIPHER database
 <img width="1197" alt="image" src="https://github.com/user-attachments/assets/4458a96a-8810-4613-9ce5-a4effa740842" />
-1. **The search tab for the genes/regions of interest**  
-2. **Quick examples of searching formats**  
-Here, we provided 3 different ways of searching: 1) by gene name 2) by band information and 3) by chromosome positions. Clicking any of them will automatically applies the example search 
+1. **The search tab for the genes/regions of interest**
+3. **Quick examples of searching formats**  
+Here, we provided 3 different ways of searching: 1) by gene name 2) by band information and 3) by chromosome positions. Clicking any of them will automatically applies the example search and showing the searching results.
+4.
 
 <img width="1186" alt="image" src="https://github.com/user-attachments/assets/de2768dd-0fcf-4742-9f87-5320efedadea" />
