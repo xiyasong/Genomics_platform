@@ -2,7 +2,7 @@ Once the job finishes, a `done` is marked on the job. Results could be viewed in
 
 
 
-**PDF View**
+## **PDF View**
 
 Results with clinical importance are formatted into the PDF report and previewed in the portal. The report contains the following contents:
 
@@ -19,7 +19,7 @@ The PDF report can be exported by clicking the exporting button on the top right
 
 
 
-**Raw Data**
+## **Raw Data**
 
 Variant selection and filtration could be applied with the Raw Data function. In the `Whole Genome` group, all screened diseases at risk could be found. Variants related to specific gene-disease lists (ACMD secondary findings, newborn screening list, carrier screening list, and cancer predisposition) could be viewed in each group.
 
