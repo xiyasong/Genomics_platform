@@ -1,0 +1,644 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Tutorials for Genome Webserver (GenRiskPro and BabyGenePro)">
+      
+      
+      
+        <link rel="canonical" href="https://xiyasong.github.io/Genomics_platform/In-house%20Reference%20Panel/">
+      
+      
+        <link rel="prev" href="../Quick%20start%20for%20BabyGenePro/">
+      
+      
+        <link rel="next" href="../Result%20filtration%20and%20export/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.50">
+    
+    
+      
+        <title>In-house Reference Panel - Genome Webserver Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.a40c8224.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#in-house-reference-panel" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Genome Webserver Documentation" class="md-header__button md-logo" aria-label="Genome Webserver Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Genome Webserver Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              In-house Reference Panel
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../Quick%20start%20for%20GenRiskPro/" class="md-tabs__link">
+        
+  
+    
+  
+  Quick start for GenRiskPro
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../Quick%20start%20for%20BabyGenePro/" class="md-tabs__link">
+        
+  
+    
+  
+  Quick start for BabyGenePro
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+    
+  
+  In-house Reference Panel
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../Result%20filtration%20and%20export/" class="md-tabs__link">
+        
+  
+    
+  
+  Result filtration and export
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Genome Webserver Documentation" class="md-nav__button md-logo" aria-label="Genome Webserver Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Genome Webserver Documentation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Quick%20start%20for%20GenRiskPro/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quick start for GenRiskPro
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Quick%20start%20for%20BabyGenePro/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quick start for BabyGenePro
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    In-house Reference Panel
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    In-house Reference Panel
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction-of-the-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction of the tool
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick start
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#snp-allele-frequencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      SNP allele frequencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cnvssvs-investigation-based-on-decipher-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      CNVs/SVs investigation based on DECIPHER database
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Result%20filtration%20and%20export/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Result filtration and export
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="in-house-reference-panel">In-house Reference Panel<a class="headerlink" href="#in-house-reference-panel" title="Permanent link">&para;</a></h1>
+<h2 id="introduction-of-the-tool">Introduction of the tool<a class="headerlink" href="#introduction-of-the-tool" title="Permanent link">&para;</a></h2>
+<p>This tool is used as a "blueprint" of all variants that found in the in-house uploaded sequencing samples. The webpage mainly including two sections:
+- The <strong>SNPs</strong> in-house allele frequencies that dynamically calculated from all the uploaded samples.
+- The <strong>CNV/SVs</strong> searching functions, that allow users to find a specific genomic regions, checking the CNVs/SVs records that existed in the uploaded samples.</p>
+<h2 id="quick-start">Quick start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
+<h3 id="snp-allele-frequencies">SNP allele frequencies<a class="headerlink" href="#snp-allele-frequencies" title="Permanent link">&para;</a></h3>
+<p><img width="1197" alt="image" src="https://github.com/user-attachments/assets/a0303c2b-93d6-4a04-a6a0-0a6cfd5cfc98" /></p>
+<p>All of SNPs are named as the format chr:pos:Ref/Alt, the percentage indicated the newest calculated allele frequency. </p>
+<ol>
+<li>
+<p><strong>View files</strong><br />
+By clicking this button, a list of all uploaded files (by sample name) are shown.  </p>
+</li>
+<li>
+<p><strong>Export all calculation results of in-house allele frequencies</strong><br />
+The calculation is based on the formula:
+Allele Frequency = Total allele count of the SNP / 2* (Total Number of Individuals) whereas Total allele count is calculated referring the heterozygous/homozygous status of the variant.  </p>
+</li>
+<li>
+<p><strong>Search / Scrolling tab</strong><br />
+Here, by searching (input the chromosome location of the variants that interested) and scrolling the user is able to view all variants detected.</p>
+</li>
+<li>
+<p><strong>Expand/More details</strong>
+Clicking this arrow will show all the sample IDs that carrying the specific variant being searched.</p>
+</li>
+<li>
+<p><strong>Export variant-specific results</strong> <br />
+This button allows downloading of a CSV file including all the sample IDs that carrying the specific variant being searched.  </p>
+</li>
+<li>
+<p><strong>View specific raw results table</strong><br />
+This button allows expanding the raw result file (generated by GenRiskPro/BabySeqPro,including prioritized variants list with gene/disease information) for the specific sample.</p>
+</li>
+</ol>
+<p><img width="1197" alt="image" src="https://github.com/user-attachments/assets/bb32eb85-7192-4dc6-bfa6-541f27e78c9f" /></p>
+<ol>
+<li>
+<p><strong>Back to all samples list</strong><br />
+In the result file page, clicking "Back" will returns to the list of all samples uploaded.  </p>
+</li>
+<li>
+<p><strong>Export whole sample-specific Results (CSV format)</strong><br />
+This button allows downloading a CSV file of raw result file of the specific sample.  </p>
+</li>
+</ol>
+<p><img width="1199" alt="image" src="https://github.com/user-attachments/assets/2204ecae-714d-4468-ab8c-f9aaac48e65d" /></p>
+<ol>
+<li><strong>Sample-based view page</strong><br />
+From the button <strong>1</strong> or button <strong>7</strong>, users will return to a page showing all samples that uploaded. The search tab allows searching by sample IDs as well as scrolling by mouse.  </li>
+</ol>
+<hr />
+<h3 id="cnvssvs-investigation-based-on-decipher-database">CNVs/SVs investigation based on DECIPHER database<a class="headerlink" href="#cnvssvs-investigation-based-on-decipher-database" title="Permanent link">&para;</a></h3>
+<p><img width="1197" alt="image" src="https://github.com/user-attachments/assets/4458a96a-8810-4613-9ce5-a4effa740842" />  </p>
+<ol>
+<li>
+<p><strong>The search tab for the genes/regions of interest</strong><br />
+You can search your interested genes/regions here.</p>
+</li>
+<li>
+<p><strong>Quick examples of searching formats</strong>  <br />
+Here, we provided 3 different ways of searching: 1) by gene name 2) by band information and 3) by chromosome positions. Clicking any of them will automatically applies the example search and showing the searching results.</p>
+</li>
+<li>
+<p><strong>Checking CNV/SVs records from DECIPHER</strong>
+After searching, the page showed the data that retrived from DECIPHER database (CNV/SVs section). Each bar represents a known insertion (red) or deletion (blue) on that region.By clicking the bar it will showing the details information of the CNV/SVs as shown in the figure below.</p>
+</li>
+<li>
+<p><strong>Retriving co-located CNV/SVs from uploaded data</strong><br />
+This "Run" button will retriving all co-located CNVs/SVs inside the range of the selected "bar" (CNV/SVs).The results were prioritized and re-ranked based on the criteria: 
+Ranks variants by how “close” or how extensively they overlap with the queried range in basepairs. For example, if you’re looking in the range 1–10 and there is:</p>
+</li>
+<li>
+<p>Deletion1 in 4–5  </p>
+</li>
+<li>Deletion2 in 2–8  </li>
+</ol>
+<p>Then <strong>Deletion2</strong> would have a higher priority because it overlaps (or covers) more of the target range (1–10). In other words, a small deletion within a larger range gets a lower rank compared to a deletion that more fully spans or intersects that same range.</p>
+<ol>
+<li>
+<p><strong>Export matching Results (CSV format)</strong> <br />
+The page showed can be downloaded as CSV format files.  </p>
+</li>
+<li>
+<p><strong>The queried range can be reduced by modifying button</strong><br />
+The tool will then apply the same overlap logic but within the newly specified boundaries.</p>
+</li>
+</ol>
+<p><img width="1197" alt="image" src="https://github.com/user-attachments/assets/e9ab0113-6bca-49f9-bf96-e255892a9bcd" /></p>
+<ul>
+<li>part 1: The details of the searched DECIPHER records.</li>
+<li>part 2: Total CNV/SVs files available.</li>
+<li>part 3: Details of co-locolated CNV/SVs, where the sample ID of the specific CNV/SVs discovered can be found in the last column "Patient".</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.top", "search.suggest", "toc.integrate"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.60a45f97.min.js"></script>
+      
+    
+  </body>
+</html>
