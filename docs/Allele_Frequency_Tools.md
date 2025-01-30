@@ -7,6 +7,7 @@ This tool is used as a "blueprint" of all variants that found in the in-house up
 # Quick start
 
 -1. SNP allele frequencies
-<img width="293" alt="image" src="https://github.com/user-attachments/assets/d7299377-ce8a-4188-9c45-27569e9ff2af" />
+<img width="761" alt="image" src="https://github.com/user-attachments/assets/ace4b494-5e31-4b0b-9e67-e5a2389899a1" />
+
 All of SNPs are named as the format chr:pos:Ref/Alt, the percentage indicated the newest calculated allele frequency. 
 
