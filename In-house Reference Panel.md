@@ -57,7 +57,7 @@ You can search your interested genes/regions here.
 Here, we provided 3 different ways of searching: 1) by gene name 2) by band information and 3) by chromosome positions. Clicking any of them will automatically applies the example search and showing the searching results.
 
 3. **Checking CNV/SVs records from DECIPHER**
-After searching, the page showed the data that retrived from DECIPHER database (CNVSVs section). Each bar represents a known insertion (red) or deletion (blue) on that region.By clicking the bar it will showing the details information of the CNV/SVs as shown in the figure below.
+After searching, the page showed the data that retrived from DECIPHER database (CNV/SVs section). Each bar represents a known insertion (red) or deletion (blue) on that region.By clicking the bar it will showing the details information of the CNV/SVs as shown in the figure below.
 
 4. **Retriving co-located CNV/SVs from uploaded data**  
 This "Run" button will retriving all co-located CNVs/SVs inside the range of the selected "bar" (CNV/SVs).The results were prioritized and re-ranked based on the criteria: 
@@ -75,4 +75,8 @@ The page showed can be downloaded as CSV format files.
 The tool will then apply the same overlap logic but within the newly specified boundaries.
 
 <img width="1197" alt="image" src="https://github.com/user-attachments/assets/e9ab0113-6bca-49f9-bf96-e255892a9bcd" />
+
+- part 1: The details of the searched DECIPHER records.
+- part 2: Total CNV/SVs files available.
+- part 3: Details of co-locolated CNV/SVs, where the sample ID of the specific CNV/SVs discovered can be found in the last column "Patient".
 
