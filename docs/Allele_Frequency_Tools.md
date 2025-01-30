@@ -19,3 +19,4 @@ All of SNPs are named as the format chr:pos:Ref/Alt, the percentage indicated th
 -2. CNVs/SVs investigation based on DECIPHER database
 <img width="1197" alt="image" src="https://github.com/user-attachments/assets/4458a96a-8810-4613-9ce5-a4effa740842" />
 
+<img width="1186" alt="image" src="https://github.com/user-attachments/assets/de2768dd-0fcf-4742-9f87-5320efedadea" />
