@@ -2,6 +2,8 @@
 
 ## Introduction
 
+<img width="452" alt="image" src="https://github.com/user-attachments/assets/30f31430-d2bb-4733-b97d-7a2dbe604911" />
+
 BabyGenePro is a freely accessible web portal, aiming to assist the newborn screening processes and support clinical decision-making in neonatal rare disease diagnosis. This web portal streamlines data analysis and generates digital reports for next-generation sequencing data. The platform builds upon the extensively validated Variant Effect Predictor (VEP) framework (McLaren et al., 2016) and incorporates standardized interpretation guidelines from the American College of Medical Genetics and Genomics (ACMG) (Miller et al., 2023). Gene panel curation integrates authoritative sources, including the Recommended Uniform Screening Panel (RUSP) and seven international NBSeq initiatives (Betzler et al., 2024), ensuring comprehensive coverage of clinical practice. The server processes input in variant call format (VCF) files, which contain single nucleotide variants (SNVs), insertions/deletions (INDELs), or structural variants (SVs) using industry-standard annotation tools and databases. Our implementation leverages established clinical genomics resources for variant interpretation, including OMIM (Amberger et al., 2015), ClinVar (Landrum et al., 2014), and GWAS Catalogue (Sollis et al., 2023), while incorporating validated pharmacogenomic databases (Whirl-Carrillo et al., 2021) for paediatric medication guidance. The system generates standardised clinical reports following the ACMG-AMP variant-interpretation guidelines (Richards et al., 2015).
 
 ## **Submit jobs**
