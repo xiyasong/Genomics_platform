@@ -1,5 +1,5 @@
 site_name: "Genome Webserver Documentation"
-site_description: "Tutorials for Genome Webserver (GenRiskPro and BabyGenePro)"
+site_description: "Tutorials for Genome Webserver (GenRiskPro and BabyGenePro and OncoRiskPro)"
 site_url: "https://xiyasong.github.io/Genomics_platform"  # optional
 
 nav:
