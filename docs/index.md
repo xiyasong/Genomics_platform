@@ -6,14 +6,14 @@ This is the tutorial page for the web server **GenRiskPro**, **BabySeqPro** and 
 
 **Table of Contents**
 
-- 1. Quick start for GenRiskPro  
+1. Quick start for GenRiskPro  
 
-- 2. Quick start for BabyGenePro  
+2. Quick start for BabyGenePro  
     
-- 3. Quick start for OncoRiskPro  
+3. Quick start for OncoRiskPro  
         
-- 4. In-house Reference Panel  
+4. In-house Reference Panel  
     
-- 5. Result filtration and export  
+5. Result filtration and export  
 
 
