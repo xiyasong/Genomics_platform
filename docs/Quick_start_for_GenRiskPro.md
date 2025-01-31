@@ -11,7 +11,7 @@ The server generates detailed variant annotations by leveraging extensively vali
 
 ## **Submit jobs**
 
-Users are required to sign up with a personal email address to start analysis for sensitive genome data. BabyGenePro currently only accepts files in the vcf format. Four types of data are available to be analysed in BabyGenePro: 1) single nucleotide polymorphism (SNPs), 2) insertions and deletions (INDELs); 3) copy number variants (CNVs); 4) other structural variants (SVs).
+Users are required to sign up with a personal email address to start analysis for sensitive genome data. GenRiskPro currently only accepts files in the vcf format. 
 
 Users can also play with the example file without login. 
 
