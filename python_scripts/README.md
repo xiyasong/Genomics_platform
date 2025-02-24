@@ -1,7 +1,10 @@
 # VEP Annotation Analysis Scripts Version Control
 We created a pipeline, for analysing VEP annotated VCF files till three results txt files, for uploading to cloud and generate PDF/APP contents automatically.
 
+**Current Production Version**: `v3.1 (2025-02-20)`
+
 # Major functions
+
 ### cell 1 
 - **Path setting**: config of storing all pathes of input/outputs.
 - **Input files/databases Handling**:  
@@ -21,8 +24,47 @@ VCF Reading → ClinVar Updates if annotated by a earlier version → Multi-crit
 | `saveFlag4` | Pharmacogenomics associated variants | D |
 | `saveFlag5` | Wellness Trait-related | E |
 
-#### 2. **Runtime Parameter Management**
-**Current Production Version**: `v4 (2025-02-20)`
+### cell 3
+To prepare of mapping variants from ClinVar and predicted parts to genes, then mapping genes to diseases.
+
+- **Gene Database Initialization**
+- Parses TSV from `geneBaseFile`
+- Populates core lists: 
+  - `ConfidenceLevel`, `TargetGroup`, `geneBasedRef`, `Disease`, `SZAdiseaseID_GDB`
+
+- **Disease Database Loading**
+- Dual storage strategy:
+  - Raw lists: `DiseaseID_DSDB`, `DiseaseName_DSDB`
+  - Lookup dictionary(for speed up): `disease_lookup[standardized_name] = (id, name, index)` 
+- Implements case-insensitive search prep via disease names standardization
+
+### cell 4
+Core Functionality: ClinVar Pathogenic Variant Reporting
+
+#### 1. **Data Preparation**
+- Extracts ClinVar annotations from VCF INFO/CSQ field
+- Handles genotype parsing with sex-aware logic:
+  ```python
+  gpf.parse_genotype(..., check_male=check_male_flag)
+  ```
+#### 2. **Disease Matching**
+- Standardizes disease names using `disease_lookup`
+- Implements two-level matching:
+  1. Direct ID match: `SZAdiseaseID_GDB`
+  2. Semantic match: Word-set comparison between ClinVar and GeneDB terms
+
+#### 3. **Integer fixed Scoring**
+- `scoreFlag` values: variant-centric
+  - 5: Pathogenic
+  - 4: Likely Pathogenic
+  - 2: Conflicting interpretations with P & VUS
+  - 1: Conflicting interpretations with LP & VUS
+ 
+
+- `scoreFlag` values: gene-centric
+ - ConfidenceLevel == 'High': 10 (Genes including in major screening projects)
+ - ConfidenceLevel == 'Moderate': 5 (Genes defined by ClinVar that is casual genes for certain diseases)
+ - ConfidenceLevel == 'Low': 0 (Genes defined by ClinVar that is just one of associated genes for certain diseases)
 
 ## Version History
 
