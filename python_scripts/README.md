@@ -3,7 +3,7 @@ We created a pipeline, for analysing VEP annotated VCF files till three results 
 
 **Current Production Version**: `v3.1 (2025-02-20)`
 
-# Major functions
+## Major functions
 
 ### cell 1 
 - **Path setting**: config of storing all pathes of input/outputs.
@@ -59,12 +59,68 @@ Core Functionality: ClinVar Pathogenic Variant Reporting
   - 4: Likely Pathogenic
   - 2: Conflicting interpretations with P & VUS
   - 1: Conflicting interpretations with LP & VUS
- 
 
 - `scoreFlag` values: gene-centric
  - ConfidenceLevel == 'High': 10 (Genes including in major screening projects)
  - ConfidenceLevel == 'Moderate': 5 (Genes defined by ClinVar that is casual genes for certain diseases)
  - ConfidenceLevel == 'Low': 0 (Genes defined by ClinVar that is just one of associated genes for certain diseases)
+
+#### 4. **Three-Tier Case Handling**
+| Case | Gene/Disease Matching Condition | What's being kept for records |
+|------|-----------|-----------|
+| 1 | Gene in GeneDB + Disease match | Full scoring + GeneDB metadata |
+| 2 | Novel gene + Disease match | Low-confidence scoring |
+| 3 | No gene/disease match | Basic flagging |
+
+### Cell 8 
+Core Functionality: Variants that are from samples, without known pathogenicity neither known benign (VUS) Risk Assessment
+
+#### 1. **Basic Variant Filter**
+- MAF < 5% (`MAX_AF` check)
+- Excludes ClinVar benign/likely_benign variants
+
+#### 2. **Multi-in-sillico scores filter**
+- High Impact (VEP)
+- LoF (Loftee) == 'HC'
+- ada_score>0.6
+- rf_score >0.6
+- REVEL>0.75
+- Any 4 of the Splice_DS_score >0.5
+- BayesDel_addAF_score >0.0692655
+- BayesDel_noAF_score > -0.0570105
+- Alphamissense am_classs == likely_pathogenic or am_pathogenicity>0.564
+
+#### 3. **Gene-Disease Mapping**
+- Matches genes to GeneDB entries with that gene's associated diseases
+- Calculates composite score:
+  ```
+  SZAscore = Base(2) + Impact(1 if HIGH) + ConfidenceLevel(0/5/10)
+  ```
+- `jSZADiseaseID`: Mapped disease identifier
+- `predicted_impact`: Boolean aggregation of prediction models
+-  Output Generation
+
+#### Score Flag Values
+| Confidence Level | Base Score | Final Range |
+|------------------|------------|-------------|
+| High             | +10        | 12-13       |
+| Moderate         | +5         | 7-8         | 
+| Low              | +0         | 2-3         |
+
+### cell 9 
+
+- **CSQ Field Expansion**: Splits VEP annotations into discrete columns
+- **Inheritance Mapping**: Links variants to OMIM inheritance patterns
+- **Disease Context Enrichment**: Combines disease descriptions from multiple sources,adding diseases ontology information
+- **Deduplication**: `drop_duplicates()` on 5 key columns ["Target.group", "Disease", "Genes", "SZAID", "SZAreportCategory"]
+- **Other Clinical Evidence databases Integration**
+`gnb.annotate() # ACMG classification from geneBe
+pd.merge(clingen) # ClinGen curated variants evidence
+pd.merge(genecc) # GenCC gene-diseases confidence level`
+- **Output Optimization**
+ - Generates HGVS standardized names ['HGVS_Naming']
+ - Adds ClinVar review star ratings
+ - Simplifies gene lists (first gene only)
 
 ## Version History
 
