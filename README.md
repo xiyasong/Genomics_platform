@@ -10,6 +10,7 @@ A repository for the preparing manuscript "A platform/webserver for genomic data
 
 why PGS scores are hard to generate based on singel-sample vcf of WGS files: see discussion https://github.com/PGScatalog/pgsc_calc/discussions/98
 
+```bash
 my_pipeline/
 ├── Snakefile             # Snakemake 
 ├── config.yaml           # config
