@@ -19,8 +19,8 @@ datetime
 # Run analysis pipeline
 python pythonpipeline.py {input_vep_annotated_file} {output_file_prefix}
 ```
-### Key Improvements on v3.1
-- **Muchfaster processing** compared to v1/v2: **15 min** to **1.5 min**.
+### Key Improvements on v 3.1
+- **Much faster processing** compared to v1/v2: **15 min** to **1.5 min**.
 - **Multiple new databases intergrated** Added gene curation db: PanelApp, and GenCC; Added variant curation db: ClinGen, geneBe (waiting for server permission fixing), disease categories.
 - **Review Star**: over or equal to 2 should be considered as solid known findings.
 - **pipeline outputs**:
