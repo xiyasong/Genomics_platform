@@ -44,14 +44,14 @@ python pythonpipeline.py {input_vep_annotated_file} {output_file_prefix}
 ---
 ## Major functions
 
-### cell 1 
+### Cell 1 
 - **Path setting**: config of storing all pathes of input/outputs.
 - **Input files/databases Handling**:  
   - VCF/GZ files: `clinvar_20240611.vcf.gz`
   - Tabular databases: `GeneDB_GenCC.txt`, `diseaseDB_1115_3.txt`,`genedb.ontology.all0307.csv`,`Merged_GWAS_vcf_2024.txt`,`Merged_Pharma_vcf_2024.txt`,`Reports_genome_databases_traits_merged_2.txt`,`Clingen-variants-2024-12-09.txt`,`pheno_OMIM_all.txt`
 
 ---
-### cell 2
+### Cell 2
 - **Whole genome variants annotation and Categorization**:
 VCF Reading → ClinVar Updates if annotated by a earlier version → Multi-criteria Analysis → Variants filtration,Categorization → Initial Report Generation
 **Five-Dimensional Classification**
@@ -65,7 +65,7 @@ VCF Reading → ClinVar Updates if annotated by a earlier version → Multi-crit
 | `saveFlag5` | Wellness Trait-related | E |
 
 ---
-### cell 3
+### Cell 3
 To prepare of mapping variants from ClinVar and predicted parts to genes, then mapping genes to diseases.
 
 - **Gene Database Initialization**
@@ -80,7 +80,7 @@ To prepare of mapping variants from ClinVar and predicted parts to genes, then m
 - Implements case-insensitive search prep via disease names standardization
 
 ---
-### cell 4
+### Cell 4
 Core Functionality: ClinVar Pathogenic Variant Reporting
 
 #### 1. **Data Preparation**
@@ -151,7 +151,7 @@ Core Functionality: Variants that are from samples, without known pathogenicity 
 | Low              | +0         | 2-3         |
 
 ---
-### cell 9 
+### Cell 9 
 
 - **CSQ Field Expansion**: Splits VEP annotations into discrete columns
 - **Inheritance Mapping**: Links variants to OMIM inheritance patterns
@@ -167,7 +167,7 @@ pd.merge(genecc) # GenCC gene-diseases confidence level`
  - Simplifies gene lists (first gene only)
 
 ---
-### cell 5 
+### Cell 5 
 **GWAS Filter & Reporting Pipeline**
 VCF Input → Genotype Parsing → GWAS Matching → Filtering by genotype match → TSV Export → Cloud Sync
 - **Mandatory Criteria**:
@@ -180,7 +180,7 @@ VCF Input → Genotype Parsing → GWAS Matching → Filtering by genotype match
   - Variant Context
  
 ---
-### cell 6
+### Cell 6
 **PGx Filter & Reporting Pipeline**
 VCF Input → Genotype Parsing → DrugDB Matching → Filtering by genotype match → TSV Export → Cloud Sync
 - Requires exact genotype match in PharmGKB
