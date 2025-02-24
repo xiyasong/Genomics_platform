@@ -5,7 +5,7 @@ Created on Thu Sep 21 15:41:09 2023
 
 @author: xiyas
 """
-# GenomeReportingPipeline version 2 on SZA sercer
+# GenomeReportingPipeline version 3.1 on SZA sercer
 # June 2023: Adding the male/female distinguishment for "Hemizygous"
 # Jan 2024: vep gz file compatible
 # April 2024: Traits report, if jText[colNames_CSQ.index('Existing_variation')] in trait_list: saveFlag5 ="Trait_var"
