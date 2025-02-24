@@ -1,5 +1,27 @@
 # VEP Annotation Analysis Scripts Version Control
+We created a pipeline, for analysing VEP annotated VCF files till three results txt files, for uploading to cloud and generate PDF/APP contents automatically.
 
+# Major functions
+### cell 1 
+- **Path setting**: config of storing all pathes of input/outputs.
+- **Input files/databases Handling**:  
+  - VCF/GZ files: `clinvar_20240611.vcf.gz`
+  - Tabular databases: `GeneDB_GenCC.txt`, `diseaseDB_1115_3.txt`,`genedb.ontology.all0307.csv`,`Merged_GWAS_vcf_2024.txt`,`Merged_Pharma_vcf_2024.txt`,`Reports_genome_databases_traits_merged_2.txt`,`Clingen-variants-2024-12-09.txt`,`pheno_OMIM_all.txt`
+
+### cell 2
+- **Whole genome variants annotation and Categorization**:
+VCF Reading → ClinVar Updates if annotated by a earlier version → Multi-criteria Analysis → Variants filtration,Categorization → Initial Report Generation
+**Five-Dimensional Classification**
+
+| Flag | Criteria | Report |
+|------|----------|--------|
+| `saveFlag1` | Pathogenic/Likely Pathogenic, Conflicting Pathogenicity with P/LP & VUS submissions | A |
+| `saveFlag2` | Low Frequency (MAF<5%) + Any in -sillico Predictive Models over the recommended threshold + Non-known benign from ClinVar | B | 
+| `saveFlag3` | GWAS-associated (p <= 5e-8 and iGenotype == risk_genotype ) | C |
+| `saveFlag4` | Pharmacogenomics associated variants | D |
+| `saveFlag5` | Wellness Trait-related | E |
+
+#### 2. **Runtime Parameter Management**
 **Current Production Version**: `v4 (2025-02-20)`
 
 ## Version History
