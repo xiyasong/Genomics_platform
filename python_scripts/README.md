@@ -3,6 +3,45 @@ We created a pipeline, for analysing VEP annotated VCF files till three results 
 
 **Current Production Version**: `v3.1 (2025-02-20)`
 
+## Environment Requirements
+pandas>=1.3.4 
+genebe 
+paramiko>=2.11.0 
+scp>=0.14.4 
+numpy>=1.21.2 
+python-dateutil>=2.8 
+csv>=1.0 
+re>=2.2.1 
+gzip 
+datetime
+## Usage Example
+```bash
+# Run analysis pipeline
+python pythonpipeline.py {input_vep_annotated_file} {output_file_prefix}
+```
+### Key Improvements on v3.1
+- **Muchfaster processing** compared to v1/v2: **15 min** to **1.5 min**.
+- **Multiple new databases intergrated** Added gene curation db: PanelApp, and GenCC; Added variant curation db: ClinGen, geneBe (waiting for server permission fixing), disease categories.
+- **Review Star**: over or equal to 2 should be considered as solid known findings.
+- **pipeline outputs**:
+  ```bash
+  output/
+  ├── _sp_Inheritance_4_nodup.txt  # Known pathogenic and predicted risk variants
+  ├── _GWAS.txt      # GWAS-specific findings (single SNP matching)
+  └── _pharmaco.txt      # PGx specific findings (single SNP matching, haplotype waiting for improvements)
+  ```
+---
+## Version History
+
+| Version | Date       | Key Changes                              |
+|---------|------------|------------------------------------------|
+| v3.1      | 2025-02-20 | Including v3 features, while adding APOE e2,e3,e4 special handling,and clinvar updates from py script and keep P/LP/CPLP based on all same version |
+| v3.0      | 2025-01-10 | Fast version, running tim around 90 sec.nodup4 file refinement, known benign variants removed, adding new db integration (PanelApp, GenCC, ClinGen, geneBe), removing unneeded middle file generation process|
+| v2.1      | 2024-01-30 | Fixing bugs, such as PGx variants in parallel with risk variants (rs6025, which should be  a famous PGx genes for F5 gene, and tratis section keep homozygous reference genotype for patients ; vep.gz file used ; Hemizygous on X chromosome for male/female distinguishment         |
+| v2.0      | 2023-09-10 | Second established version of a script for analyzing vep annotated file, giving scores, detection of both known phenotypic-associated variants and predicted variants; multiple gene panels, as well as completed GWAS,PGx,nodup4 file and traits outputs.         |
+| v1.0      | 2022-09-10 | Initial established version of a script for detecting ClinVar Pathogenic/likely pathogenic variants only from a non-annotated VCF single sample file. The variants-genes-disease association is used as input database.    |
+
+---
 ## Major functions
 
 ### cell 1 
@@ -11,6 +50,7 @@ We created a pipeline, for analysing VEP annotated VCF files till three results 
   - VCF/GZ files: `clinvar_20240611.vcf.gz`
   - Tabular databases: `GeneDB_GenCC.txt`, `diseaseDB_1115_3.txt`,`genedb.ontology.all0307.csv`,`Merged_GWAS_vcf_2024.txt`,`Merged_Pharma_vcf_2024.txt`,`Reports_genome_databases_traits_merged_2.txt`,`Clingen-variants-2024-12-09.txt`,`pheno_OMIM_all.txt`
 
+---
 ### cell 2
 - **Whole genome variants annotation and Categorization**:
 VCF Reading → ClinVar Updates if annotated by a earlier version → Multi-criteria Analysis → Variants filtration,Categorization → Initial Report Generation
@@ -24,6 +64,7 @@ VCF Reading → ClinVar Updates if annotated by a earlier version → Multi-crit
 | `saveFlag4` | Pharmacogenomics associated variants | D |
 | `saveFlag5` | Wellness Trait-related | E |
 
+---
 ### cell 3
 To prepare of mapping variants from ClinVar and predicted parts to genes, then mapping genes to diseases.
 
@@ -38,6 +79,7 @@ To prepare of mapping variants from ClinVar and predicted parts to genes, then m
   - Lookup dictionary(for speed up): `disease_lookup[standardized_name] = (id, name, index)` 
 - Implements case-insensitive search prep via disease names standardization
 
+---
 ### cell 4
 Core Functionality: ClinVar Pathogenic Variant Reporting
 
@@ -72,6 +114,7 @@ Core Functionality: ClinVar Pathogenic Variant Reporting
 | 2 | Novel gene + Disease match | Low-confidence scoring |
 | 3 | No gene/disease match | Basic flagging |
 
+---
 ### Cell 8 
 Core Functionality: Variants that are from samples, without known pathogenicity neither known benign (VUS) Risk Assessment
 
@@ -107,6 +150,7 @@ Core Functionality: Variants that are from samples, without known pathogenicity 
 | Moderate         | +5         | 7-8         | 
 | Low              | +0         | 2-3         |
 
+---
 ### cell 9 
 
 - **CSQ Field Expansion**: Splits VEP annotations into discrete columns
@@ -122,33 +166,32 @@ pd.merge(genecc) # GenCC gene-diseases confidence level`
  - Adds ClinVar review star ratings
  - Simplifies gene lists (first gene only)
 
-## Version History
+---
+### cell 5 
+**GWAS Filter & Reporting Pipeline**
+VCF Input → Genotype Parsing → GWAS Matching → Filtering by genotype match → TSV Export → Cloud Sync
+- **Mandatory Criteria**:
+  - p-value ≤ 5e-8 
+  - Risk genotype match
+- **Output Fields**:
+  - Odds Ratio (OR)
+  - PubMed ID
+  - Mapped Gene
+  - Variant Context
+ 
+---
+### cell 6
+**PGx Filter & Reporting Pipeline**
+VCF Input → Genotype Parsing → DrugDB Matching → Filtering by genotype match → TSV Export → Cloud Sync
+- Requires exact genotype match in PharmGKB
+- Captures evidence metrics from PharmGKB:
+  - Level of Evidence
+  - Affected Drugs
+  - Phenotype Category
+  - Clinical Annotation Score
+  - PharmGKB URL
+  - Genotype-based annotation.texts
 
-| Version | Date       | Key Changes                              |
-|---------|------------|------------------------------------------|
-| v3.1      | 2025-02-20 | Including v3 features, while adding APOE e2,e3,e4 special handling,and clinvar updates from py script and keep P/LP/CPLP based on all same version |
-| v3.0      | 2025-01-10 | Fast version, running tim around 90 sec.nodup4 file refinement, known benign variants removed, adding new db integration (PanelApp, GenCC, ClinGen, geneBe), removing unneeded middle file generation process|
-| v2.1      | 2024-01-30 | Fixing bugs, such as PGx variants in parallel with risk variants (rs6025, which should be  a famous PGx genes for F5 gene, and tratis section keep homozygous reference genotype for patients ; vep.gz file used ; Hemizygous on X chromosome for male/female distinguishment         |
-| v2.0      | 2023-09-10 | Second established version of a script for analyzing vep annotated file, giving scores, detection of both known phenotypic-associated variants and predicted variants; multiple gene panels, as well as completed GWAS,PGx,nodup4 file and traits outputs.         |
-| v1.0      | 2022-09-10 | Initial established version of a script for detecting ClinVar Pathogenic/likely pathogenic variants only from a non-annotated VCF single sample file. The variants-genes-disease association is used as input database.    |
-
-### Key Improvements on v3.1
-- **Muchfaster processing** compared to v1/v2: **15 min** to **1.5 min**.
-- **Multiple new databases intergrated** Added gene curation db: PanelApp, and GenCC; Added variant curation db: ClinGen, geneBe (waiting for server permission fixing), disease categories.
-- **Review Star**: over or equal to 2 should be considered as solid known findings.
-- **pipeline outputs**:
-  ```bash
-  output/
-  ├── _sp_Inheritance_4_nodup.txt  # Known pathogenic and predicted risk variants
-  ├── _GWAS.txt      # GWAS-specific findings (single SNP matching)
-  └── _pharmaco.txt      # PGx specific findings (single SNP matching, haplotype waiting for improvements)
-  ```
-
-## Environment Requirements
+---
 
 
-## Usage Example
-```bash
-# Run analysis pipeline
-python pythonpipeline.py {input_vep_annotated_file} {output_file_prefix}
-```
