@@ -35,7 +35,7 @@ python pythonpipeline.py {input_vep_annotated_file} {output_file_prefix}
 
 | Version | Date       | Key Changes                              |
 |---------|------------|------------------------------------------|
-| v3.1      | 2025-02-20 | Including v3 features, while adding APOE e2,e3,e4 special handling for AD; and Clinvar updates from py script and keep P/LP/CPLP based on all same version |
+| v3.1      | 2025-02-24 | Including v3 features, while 1) adding APOE e2,e3,e4 haplotype special handling for AD; 2) ClinVar updates from py script and keep P/LP/CPLP based on all same/newest version |
 | v3.0      | 2025-01-10 | Fast version, running tim around 90 sec. The nodup4 file refinement, known benign variants removed, adding new db integration (PanelApp, GenCC, ClinGen, geneBe); removing unneeded middle file generation |
 | v2.1      | 2024-01-30 | Fixing bugs, such as PGx variants in parallel with risk variants (rs6025, which should be  a famous PGx genes for F5 gene, and tratis section keep homozygous reference genotype for patients ; vep.gz file used ; Hemizygous on X chromosome for male/female distinguishment         |
 | v2.0      | 2023-09-10 | Second established version of a script for analyzing vep annotated file, giving scores, detection of both known phenotypic-associated variants and predicted variants; multiple gene panels, as well as completed GWAS,PGx,nodup4 file and traits outputs.         |
