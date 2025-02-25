@@ -32,6 +32,8 @@ datetime
                 ├── `Reports_genome_databases_traits_merged_2.txt` – Phenotypic trait database
                 └── `clinvar_20240611.vcf.gz` – ClinVar variant database (gzipped)
 
+(All_traits.csv: while generating pdf. Records genotype-based traits likelyhood description and scores (1-2-3-4, 4 most likely, 1 least likely)
+
 
 
 ## Usage Example
