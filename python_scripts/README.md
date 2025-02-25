@@ -21,6 +21,7 @@ datetime
 └── storage_pool/
     └── Genomics/
         └── Genome/
+            └── 
             └── database-files/
                 ├── `ClinGen-variants-2024-12-09.txt` – ClinGen variant interpretations
                 ├── `GeneDB_GenCC.txt` – Gene-disease clinical validity
