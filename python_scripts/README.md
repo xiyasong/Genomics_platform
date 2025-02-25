@@ -14,6 +14,26 @@ csv>=1.0
 re>=2.2.1 
 gzip 
 datetime
+
+## Source Databases Management ##:
+```bash
+/mnt/
+└── storage_pool/
+    └── Genomics/
+        └── Genome/
+            └── database-files/
+                ├── `ClinGen-variants-2024-12-09.txt` – ClinGen variant interpretations
+                ├── `GeneDB_GenCC.txt` – Gene-disease clinical validity
+                ├── `diseaseDB_1115_3.txt` – Disease ontology database
+                ├── `pheno_OMIM_all.txt` – OMIM phenotype-inheritance mappings
+                ├── `genedb.ontology.all0307.csv` – Gene ontology relationships
+                ├── `Merged_GWAS_vcf_2024.txt` – GWAS summary statistics
+                ├── `Merged_Pharma_vcf_2024.txt` – Pharmacogenomic associations
+                ├── `Reports_genome_databases_traits_merged_2.txt` – Phenotypic trait database
+                └── `clinvar_20240611.vcf.gz` – ClinVar variant database (gzipped)
+
+
+
 ## Usage Example
 ```bash
 # Run analysis pipeline
