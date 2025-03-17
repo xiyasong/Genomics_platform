@@ -53,13 +53,15 @@ python pythonpipeline.py {input_vep_annotated_file} {output_file_prefix}
   output/
   ├── _sp_Inheritance_4_nodup.txt  # Known pathogenic and predicted risk variants
   ├── _GWAS.txt      # GWAS-specific findings (single SNP matching)
-  └── _pharmaco.txt      # PGx specific findings (single SNP matching, haplotype waiting for improvements)
+  └── _pharmaco.txt      # PGx specific findings (single SNP matching as well as star allele based matching)
+  └── _traits.txt      # Wellness and life-style associated findings (single SNP matching)
   ```
 ---
 ## Version History
 
 | Version | Date       | Key Changes                              |
 |---------|------------|------------------------------------------|
+| v3.2      | 2025-03-20 | PGx Star Allele fetching as well as single SNP-multiple annotations bug fixed (Now one SNP should be able to get all annotation records from PharmGKB, meanwhile we used a filter for PDF/APP:1A most severe ; 1B severe ; 2A 2B low drugs, all other SNPs star allele by default muted) |
 | v3.1      | 2025-02-24 | Including v3 features, while 1) adding APOE e2,e3,e4 haplotype special handling for AD; 2) ClinVar updates from py script and keep P/LP/CPLP based on all same/newest version |
 | v3.0      | 2025-01-10 | Fast processing version, running time around 90 sec. The nodup4 file refinement, known benign variants removed, adding new db integration (PanelApp, GenCC, ClinGen, geneBe); removing unneeded middle file generation |
 | v2.1      | 2024-01-30 | Fixing bugs, such as PGx variants in parallel with risk variants (rs6025, which should be  a famous PGx genes for F5 gene, and tratis section keep homozygous reference genotype for patients ; vep.gz file used ; Hemizygous on X chromosome for male/female distinguishment; vep.gz files accepted        |
