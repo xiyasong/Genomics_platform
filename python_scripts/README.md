@@ -29,7 +29,9 @@ datetime
                 ├── `pheno_OMIM_all.txt` – OMIM phenotype-inheritance mappings
                 ├── `genedb.ontology.all0307.csv` – Gene ontology relationships
                 ├── `Merged_GWAS_vcf_2024.txt` – GWAS summary statistics
-                ├── `Merged_Pharma_vcf_2024.txt` – Pharmacogenomic associations
+                ├── `Merged_Pharma_vcf_2024.txt` – Pharmacogenomic associations (only SNP and in a old version)
+                ├── `PGx_annotation_all.levels.drugs.hap250220.txt` – A file records SNP and star allele associations/ compositions
+                ├── `Pharma_db_all.txt` – Pharmacogenomic associations (From PharmGKB with both SNP and star allele associations)
                 ├── `Reports_genome_databases_traits_merged_2.txt` – Phenotypic trait database
                 └── `clinvar_20240611.vcf.gz` – ClinVar variant database (gzipped)
 
