@@ -1,7 +1,7 @@
 # VEP Annotation Analysis Scripts Version Control
 We created a pipeline, for analysing VEP annotated VCF files till three results txt files, for uploading to cloud and generate PDF/APP contents automatically.
 
-**Current Production Version**: `v3.1 (2025-02-20)`
+**Current Production Version**: `v3.2 (2025-03-20)`
 
 ## Environment Requirements
 pandas>=1.3.4 
