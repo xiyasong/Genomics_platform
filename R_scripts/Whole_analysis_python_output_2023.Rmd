@@ -3,7 +3,11 @@ title: "Whole_analysis_and_plots.R"
 author: "Xiya"
 date: '2023-11-21'
 output: html_document
+title: "Variant-Gene-Disease Analysis"
+runtime: shiny
+output: html_document
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -11,11 +15,10 @@ library(dplyr)
 library(ggsci)
 library(ggpubr)
 library(ggtext)
-library(tidyverse)
+#library(tidyverse)
 library(ggsci)
 library(reshape2)
 library(data.table)
-
 library(openxlsx)
 
 ```
@@ -25,6 +28,90 @@ library(openxlsx)
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+# 0.0.Get databases annotations
+```{r}
+####Get the summary DB combines GeneDB and DiseaseDB and Inheritance ----------
+DiseaseDB <- read.delim2("/Users/xiyas/V2_Genome_reporting/database-file-v2/DiseaseDB_version_2_Beta_curated.txt")
+GeneDB <- read.delim2("/Users/xiyas/V2_Genome_reporting/database-file-v2/GeneDB.txt")
+OMIM_inheritance_DB <- read.delim2('/Users/xiyas/V2_Genome_reporting/database-file-v2/pheno_OMIM_all.txt') 
+OMIM_inheritance_DB$phenotypeMimNumber <- as.character(OMIM_inheritance_DB$phenotypeMimNumber)
+###Mapping database
+###left join, only kept the diseases that in the GeneDB  
+Summary_DB <- left_join(GeneDB,DiseaseDB,by= "SZAdiseaseID")
+Summary_DB <- left_join(Summary_DB,OMIM_inheritance_DB,by= c("DiseaseMIM"="phenotypeMimNumber"))
+Summary_DB <- Summary_DB %>% filter(!duplicated(cbind(Genes,SZAdiseaseID,Gene.Disease.confidence.level,Target.group)))
+
+AD_genes <- 
+  unique(
+    Summary_DB %>% filter(grepl("Autosomal dominant",inheritances))%>% 
+      .$Genes
+  )
+AR_genes <- 
+  unique(
+    Summary_DB %>% filter(grepl("Autosomal recessive",inheritances))%>% 
+      .$Genes
+  )
+
+
+```
+# 0.1 Process TR and SW data
+```{r}
+# Process Turkish data -----------------
+df_temp_turkish <- read_and_process_files("/Users/xiyas/V2_Genome_reporting/python_output_turkish_275/nodup4_file", "Turkish")
+df_temp_turkish <- customize_temp_data(df_temp_turkish)
+
+clinvar_TR <- get_clinvar_variants(df_temp_turkish)
+clinvar_TR_unique <- get_unique_SZAID(clinvar_TR)
+
+sillico_pLoFs_TR <- get_other_sillico_pLoFs(df_temp_turkish)
+sillico_pLoFs_unique_TR <- get_unique_variants(sillico_pLoFs_TR)
+
+ACMG_TR <- get_ACMG_findings(df_temp_turkish)
+#ACMG_TR_unique <- get_unique_SZAID(ACMG_TR)
+
+# clinVar variants 
+## before the P_LP filteration
+## now sorted_tab_TR = cohort-level unique SZAID clinvar_TR with freq count
+sorted_tab_TR <- get_sorted_tab(clinvar_TR, clinvar_TR_unique)
+
+sorted_tab_TR_filter =list(sorted_tab_filter = get_P_LP(sorted_tab_TR$sorted_tab),
+                           sorted_tab_old_filter = get_P_LP(sorted_tab_TR$sorted_tab_old))
+
+# sillico variants
+sorted_tab_TR_sillico <- get_sorted_tab_sillico(sillico_pLoFs_TR, sillico_pLoFs_unique_TR)
+
+# sillico no need to fileter
+
+# Process Swedish data -----------------
+df_temp_swedish <- read_and_process_files("/Users/xiyas/V2_Genome_reporting/python_output_swedish_101/nodup4_file", "Swedish")
+df_temp_swedish <- customize_temp_data(df_temp_swedish)
+
+clinvar_SW <- get_clinvar_variants(df_temp_swedish)
+clinvar_SW_unique <- get_unique_SZAID(clinvar_SW)
+
+sillico_pLoFs_SW <- get_other_sillico_pLoFs(df_temp_swedish)
+sillico_pLoFs_unique_SW <- get_unique_variants(sillico_pLoFs_SW)
+
+ACMG_SW <- get_ACMG_findings(df_temp_swedish)
+ACMG_SW_unique <- get_unique_SZAID(ACMG_SW)
+
+# clinVar variants  
+## before the P_LP filteration
+sorted_tab_SW <- get_sorted_tab(clinvar_SW, clinvar_SW_unique)
+## after the P_LP filteration
+sorted_tab_SW_filter =list(sorted_tab_filter = get_P_LP(sorted_tab_SW$sorted_tab),
+                           sorted_tab_old_filter = get_P_LP(sorted_tab_SW$sorted_tab_old))
+# sillico variants
+sorted_tab_SW_sillico <- get_sorted_tab_sillico(sillico_pLoFs_SW, sillico_pLoFs_unique_SW)
+
+# Combine the two data frames into one -----------------
+combined_df <- rbind(clinvar_TR,clinvar_SW)
+combined_sillico_df <- rbind(sillico_pLoFs_TR,sillico_pLoFs_SW)
+#write.table(combined_df,file = "combined_df_clinvar.txt",quote = FALSE,col.names = FALSE,sep = "\t")
+#combined_df$Population <- factor(combined_df$Population, levels = c("Turkish", "Swedish"))
+#clinvar_genes_count_combined <- rbind(clinvar_genes_count_turkish, clinvar_genes_count_swedish)
+```
 
 # 1.Figure 7 && ACMG findigns
 
@@ -54,7 +141,7 @@ var_count <- ACMG_TR %>%
 var_count$patientID <- sapply(strsplit(var_count$patientID,"\\."), `[`, 1)
 
 # Read family data
-family <- readxl::read_excel("/Users/xiyas/V2_Genome_reporting/metadata/P001_Metadata_v2.xlsx")
+family <- readxl::read_excel("/Users/xiyas/V2_Genome_reporting/teydep_metadata/metadata_old/P001_Metadata_v2.xlsx")
 colnames(family)[1] <- 'patientID'
 var_count <- merge(var_count, family %>% select(patientID, `FAMILY #`), by= 'patientID') %>% arrange(Variant_info, desc(count))
 
@@ -95,7 +182,7 @@ Test_plot <- ACMG_TR_2 %>%
 print(Test_plot)
 
 # Save Plot
-ggsave(Test_plot, filename = "/Users/xiyas/V2_Genome_reporting/Plots/Test-plot.pdf", width = 9, height = 7)
+#ggsave(Test_plot, filename = "/Users/xiyas/V2_Genome_reporting/Plots/Test-plot.pdf", width = 9, height = 7)
 
 ```
 ### Screening related findings (newborn, carrier, cancer syndroms)
@@ -103,7 +190,6 @@ ggsave(Test_plot, filename = "/Users/xiyas/V2_Genome_reporting/Plots/Test-plot.p
 ```{r TR}
 High_genes <-GeneDB %>% filter(Gene.Disease.confidence.level == "High_confidence") %>% select(Genes)
 High_genes <- unique(High_genes$Genes)
-
 
 # Turkish =========
 High_screening <- get_P_LP_LoFs(df_temp_turkish)
@@ -140,7 +226,7 @@ High_genes_TR <- var_count_High %>%
     "SpliceAI_pred_DS_AG", "SpliceAI_pred_DS_AL", "SpliceAI_pred_DS_DG",
     "SpliceAI_pred_DS_DL", "SpliceAI_pred_SYMBOL","ClinVar_CLNHGVS", "Inheritances","MAX_AF_Category" 
   )
-write.xlsx(High_genes_TR,file = "/Users/xiyas/V2_Genome_reporting/data/High_genes_TR.xlsx")
+#write.xlsx(High_genes_TR,file = "/Users/xiyas/V2_Genome_reporting/data/High_genes_TR.xlsx")
 
 # Swedish =========
 High_genes_SW <- var_count_High %>% 
@@ -157,7 +243,7 @@ High_genes_SW <- var_count_High %>%
     "SpliceAI_pred_DS_AG", "SpliceAI_pred_DS_AL", "SpliceAI_pred_DS_DG",
     "SpliceAI_pred_DS_DL", "SpliceAI_pred_SYMBOL","ClinVar_CLNHGVS", "Inheritances","MAX_AF_Category" 
   )
-write.xlsx(High_genes_SW,file = "/Users/xiyas/V2_Genome_reporting/data/High_genes_SW.xlsx")
+#write.xlsx(High_genes_SW,file = "/Users/xiyas/V2_Genome_reporting/data/High_genes_SW.xlsx")
 
 #unique_diseases <- var_count_High %>%
 #  distinct(Disease, .keep_all = TRUE)
@@ -193,23 +279,29 @@ gene_count <- var_count_High %>%  group_by(Genes) %>%
 
 ```
 
-
-
 # 2. Figure 4A && per-sample statistics 
 ### (for 5 types of variants:ClinVar variants, pLOFs, predicted risk variants, PGx variants, and GWAS variants)
 
 ```{r get the data table}
 # per_sample statictics ===============
 # Loop over files and extract the "SZAID" column
-unique_szaid_count_TR <- length(unique(GWAS_TR$SZAvarID))
+unique_szaid_count_TR <- length(unique(df_GWAS_TR$SZAvarID))
 print(unique_szaid_count_TR)
-unique_szaid_count_SW <- length(unique(GWAS_SW$SZAvarID))
+unique_szaid_count_SW <- length(unique(df_GWAS_SW$SZAvarID))
 print(unique_szaid_count_SW)
 
-unique_szaid_count_TR <- length(unique(Pharmaco_TR$SZAvarID))
+unique_szaid_count_TR <- length(unique(df_pharmaco_TR_remove_4$SZAvarID))
 print(unique_szaid_count_TR)
-unique_szaid_count_SW <- length(unique(Pharmaco_SW$SZAvarID))
+unique_szaid_count_SW <- length(unique(df_pharmaco_SW_remove_4$SZAvarID))
 print(unique_szaid_count_SW)
+
+df_GWAS_TR$Population <- "Turkish"
+df_GWAS_SW$Population <- "Swedish"
+combined_GWAS <- rbind(df_GWAS_TR,df_GWAS_SW)
+
+df_pharmaco_TR_remove_4$Population <- "Turkish"
+df_pharmaco_SW_remove_4$Population <- "Swedish"
+combined_pharmaco <- rbind(df_pharmaco_TR_remove_4,df_pharmaco_SW_remove_4)
 
 summary_data <- combined_GWAS %>%
   group_by(patientID, Population) %>%
@@ -293,7 +385,6 @@ per_sample <- ggplot(summary_data, aes(x = variable, y = value, fill = Populatio
   #geom_text(data = summary_stats, aes(x = variable, y = min_count,group=Population,label = paste("Min:", min_count, "\nMax:", max_count, "\nMedian:", median_count)),position = position_dodge(width = 0.75),vjust = -0.5, hjust=-0.2,size = 2, fontface = "bold", color = "black", inherit.aes = FALSE)
 print(per_sample)
 ggsave(per_sample,filename = "/Users/xiyas/V2_Genome_reporting/Plots/per-sample.pdf",width = 9,height = 7)
-
 
 ```
 
@@ -477,7 +568,7 @@ intersect(Conflict$SZAID,Conflict_swedish$SZAID)
 ```
 
 ```{r make a plot: Figure 4C common variants heatmap}
-
+library(pheatmap)
 save_pheatmap_pdf <- function(x, filename, width=7, height=7) {
    stopifnot(!missing(x))
    stopifnot(!missing(filename))
@@ -525,7 +616,7 @@ colours = colorRampPalette(c("navy", "white", "firebrick3"))(10)
 
 plot <- pheatmap(top_30_features,cluster_rows = FALSE,color=colours,
          annotation_row = annotation_row,annotation_colors = ann_colors)
-save_pheatmap_pdf(plot, "/Users/xiyas/V2_Genome_reporting/Plots/Figure4B.pdf")
+#save_pheatmap_pdf(plot, "/Users/xiyas/V2_Genome_reporting/Plots/Figure4B.pdf")
 
 ```
 ## 5. Figure 5A ClinVar Variants filteration
@@ -549,14 +640,17 @@ display_venn(
 )
 
 length(table(sorted_tab_TR_filter$sorted_tab_old_filter$patientID))
+# count how many genes? TR 312, SW 166
 length(table(sorted_tab_TR_filter$sorted_tab_old_filter$Genes))
+length(table(sorted_tab_SW_filter$sorted_tab_old_filter$Genes))
+
 length(table(sorted_tab_SW_filter$sorted_tab_old_filter$patientID))
 
 
 ##PAH highest unique number of P/LP variants,followed by ABCA4 and CFTR
-test <-as.data.frame(table(sorted_tab_TR_filter$sorted_tab_old_filter$Genes)) 
+test_TR <-as.data.frame(table(sorted_tab_TR_filter$sorted_tab_old_filter$Genes)) 
 ## SW:
-test <-as.data.frame(table(sorted_tab_SW_filter$sorted_tab_old_filter$Genes)) 
+test_SW <-as.data.frame(table(sorted_tab_SW_filter$sorted_tab_old_filter$Genes)) 
 
 ```
 
@@ -1132,7 +1226,7 @@ sillico_plot <- merge_df_TR_long %>%
   )
 
 sillico_plot
-#ggsave(sillico_plot,filename = "/Users/xiyas/V2_Genome_reporting/Plots/Figure5E.pdf",width = 9,height = 6)
+#ggsave(sillico_plot,filename = "/Users/xiyas/V2_Genome_reporting/Plots/Figure6D.pdf",width = 9,height = 6)
 ```
 
 ### Figure 6D Newest version plot : SW -----------------------------------
