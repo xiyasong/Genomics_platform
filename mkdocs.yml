@@ -1,30 +1,56 @@
-site_name: "Genome Webserver Documentation"
-site_description: "Tutorials for Genome Webserver (GenRiskPro and BabyGenePro and OncoRiskPro)"
-site_url: "https://xiyasong.github.io/Genomics_platform"  # optional
+site_name: "Genomics Platform Documentation"
+site_description: "Tutorials and documentation for Genomics Platform (GenRiskPro, BabyGenePro, and OncoRiskPro)"
+site_url: "https://xiyasong.github.io/Genomics_platform"
 
 nav:
   - Home: index.md
-  - Quick start for GenRiskPro: Quick_start_for_GenRiskPro.md
-  - Quick start for BabyGenePro: Quick_start_for_BabyGenePro.md
-  - Quick start for OncoRiskPro: Quick_start_for_OncoRiskPro.md
+  - Quick Start for GenRiskPro Platform (Cohort Analysis): GenRiskPro_Dashboard_tutorial.md
+  - Quick Start for GenRiskPro Web-server (Single Sample): Quick_start_for_GenRiskPro.md
+  - Quick Start for BabyGenePro: Quick_start_for_BabyGenePro.md
+  - Quick Start for OncoRiskPro: Quick_start_for_OncoRiskPro.md
   - In-house Reference Panel: In-house_Reference_Panel.md
-  - Result filtration and export: Result_filtration_and_export.md
+  - Result Filtration and Export: Result_filtration_and_export.md
 
 theme:
   name: material
   features:
     - navigation.tabs
     - navigation.top
+    - navigation.sections
     - search.suggest
+    - search.highlight
     - toc.integrate
+  palette:
+    # Light mode
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
 
-# (Optional) Extra configuration can go here
 plugins:
-  - search  # 启用搜索功能
-
-extra_css:
-  - stylesheets/extra.css  # 可选：自定义 CSS
+  - search
 
 markdown_extensions:
   - toc:
-      permalink: true  # 为标题添加链接锚点
+      permalink: true
+  - admonition  
+  - codehilite:  
+      guess_lang: false
+  - pymdownx.superfences  
+  - pymdownx.tabbed  
+  - attr_list  
+
+# 可选的额外配置
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/xiyasong/Genomics_platform
