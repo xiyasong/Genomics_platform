@@ -1,5 +1,5 @@
 # Home
-This is the tutorial page for the GenRiskPro platform, and the single-sample web-server version of  **GenRiskPro**, **BabySeqPro** and **OncoRiskPro**.
+This is the tutorial page for the **GenRiskPro platform**, single-sample web-server version of  **GenRiskPro**, and two other extra web-server interface **BabySeqPro** and **OncoRiskPro**.
 
 ![image](https://github.com/user-attachments/assets/973ec41d-93ae-481a-acc7-dd9ed133c51d)
 
