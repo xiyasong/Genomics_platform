@@ -1,262 +1,56 @@
----
-title: "Whole_analysis_and_plots.R"
-author: "Xiya"
-date: '2023-11-21'
-output: html_document
----
+########Reading python_output_files--Process to generate df_clinvar and df_puta ----------
+GenDB <- read.delim2("/Users/xiyas/V2_Genome_reporting/database-file-v2/GeneDB.txt")
+###now it includes 275 files 
+setwd("/Users/xiyas/V2_Genome_reporting/python_output_turkish_275/nodup_4_file/")
+#generated nodup file 3 with score 12,13,14,15 and 7,8,9,10 variants-disease 
+#setwd("/Users/xiyas/V2_Genome_reporting/python_output_file_swedish/")
+files = list.files(path = "/Users/xiyas/V2_Genome_reporting/python_output_turkish_275/nodup_4_file/", pattern = "_4_nodup.txt")
+#Mitochondrial genes removed
+#temp = read.delim("/Users/xiyas/V2_Genome_reporting/python_output_file/P001_106.hard-filtered.vcf.gz_vep_annotated.vcf_outfile_sp_Inheritance_3_nodup.txt")list_clinvar = list()
+list_puta = list()
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(dplyr)
-library(ggsci)
-library(ggpubr)
-library(ggtext)
-library(tidyverse)
-library(ggsci)
-library(reshape2)
-library(data.table)
+for(i in files){
+  temp = read.delim(file = i)
+  # columns to paste together
+  cols <- c( "X.CHROM", "POS" , "Genotype" )
+  temp$POS <- gsub(" ","",temp$POS)
+  # create a new column `Variant_info` with the three columns collapsed together
+  temp$Variant_info <- apply(temp[,cols] , 1 , paste , collapse = "-" )
+  Clin_var <-  temp %>% filter(grepl("ClinP_LP_var",Database_type))
+  ###Only keep the unique variant for one samples ----------------------------This is the probelm, only show the first gene-disease matcing for this variant 
+  ##New: this seems cause trouble when counting by gene panels
+  Clin_var <- Clin_var[!duplicated(Clin_var$SZAID), ]
+  ##Extract needed cols
+  ##This time keep all the cols for checking
+  Clin_var$patientID <- rep(i)
+  colnames(Clin_var)[26] <- "Sample"
+  ###combine the one person with another person: new method: dont' do rbind in for loop, rather create list
+  list_clinvar[[i]] <- Clin_var
+  puta_var <-  temp %>% filter(grepl("NovelTrans",SZAID))
+  ###Only keep the unique variant for one samples
+  puta_var <- puta_var[!duplicated(puta_var$SZAID),]
+  #puta_var <- puta_var[,c('Genes','Variant_info',"Zygosity","ClinVar_CLNSIG","Consequence","MAX_AF","Gene.Disease.confidence.level","Target.group","Disease")]
+  puta_var$patientID <- rep(i)
+  colnames(puta_var)[26] <- "Sample"
+  list_puta[[i]] <- puta_var
+}
 
-
-```
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-# 1.Figure 7 && ACMG findigns
-
-```{r Figure 7}
-# Previously generated tables
-# this is already contains Novel variants so should not use get unique SZAID
-ACMG_TR <- get_ACMG_findings(df_temp_turkish)
-# Calculate the length of the table of patient IDs
-num_unique_patients <- length(table(ACMG_TR$patientID))
-# Print the message with the number of unique P/LP/pLoFs on ACMG genes
-print(paste("A sum number of unique P/LP/pLoFs on ACMG genes:", num_unique_patients))
-
-ACMG_TR_unique <- get_unique_variants(ACMG_TR)
-# Subset and Filter Data
-temp_subset <- ACMG_TR %>% select(patientID, Variant_info)
-positive <- ACMG_TR %>% filter(condition == "Positive")
-#table(positive$patientID)
-
-# Count and Arrange Variants
-var_count <- ACMG_TR %>%
-  group_by(Variant_info) %>%
-  summarise(count = n()) %>%
-  arrange(desc(count)) %>%
-  merge(temp_subset, by = 'Variant_info', all.x = TRUE)
-
-# Format patient IDs
-var_count$patientID <- sapply(strsplit(var_count$patientID,"\\."), `[`, 1)
-
-# Read family data
-family <- readxl::read_excel("/Users/xiyas/V2_Genome_reporting/metadata/P001_Metadata_v2.xlsx")
-colnames(family)[1] <- 'patientID'
-var_count <- merge(var_count, family %>% select(patientID, `FAMILY #`), by= 'patientID') %>% arrange(Variant_info, desc(count))
-
-# Prepare Data for Plotting
-ACMG_TR_2 <- ACMG_TR
-ACMG_TR_2$value <- rep(1)
-ACMG_TR_2$paste.name <- paste(ACMG_TR_2$Disease, "-", ACMG_TR_2$Genes)
-
-# Generate and Customize Plot
-custom_theme <- theme(
-  panel.border = element_blank(),
-  panel.grid.minor = element_line(size = 0.5, colour = "grey"),
-  panel.grid.major = element_blank(),
-  plot.title = element_text(size = 18, hjust = 0.5, face = "bold"),
-  axis.line = element_line(size = 0.5, colour = "black"),
-  axis.title = element_text(size = 15, colour = "black"),
-  axis.text.y = element_text(size = 12, colour = "black"),
-  axis.text.x = element_text(size = 8, colour = "black", angle = 45, hjust = 1, vjust = 1),
-  plot.margin = unit(c(1, 1, 1, 4), "cm")
-)
-
-Test_plot <- ACMG_TR_2 %>% 
-  ggplot(aes(x = reorder(paste.name, -value), y = value, fill = condition)) +
-  geom_bar(stat="identity", color = "white", alpha=0.9) +
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 8)) +
-  theme_bw() +
-  scale_fill_manual(values = c("#FFB90F","#A52A2A","grey")) +
-  ggtitle("Returns of Health predispositions testing") +
-  geom_hline(yintercept = 0) +
-  custom_theme +
-  labs(x = 'Gene-disease pairs', y = 'Results')
-
-# Display Plot
-print(Test_plot)
-
-# Save Plot
-ggsave(Test_plot, filename = "/Users/xiyas/V2_Genome_reporting/Plots/Test-plot.pdf", width = 9, height = 7)
-
-```
-### Screening related findings (newborn, carrier, cancer syndroms)
-### TR
-```{r TR}
-High_genes <-GeneDB %>% filter(Gene.Disease.confidence.level == "High_confidence") %>% select(Genes)
-High_genes <- unique(High_genes$Genes)
-
-High_screening <- get_P_LP_LoFs(df_temp_turkish)
-High_screening <- High_screening %>% filter(Genes %in% High_genes)
-High_screening_unique <- get_unique_variants(High_screening)
-sorted_other_High <- get_sorted_tab_sillico(High_screening,High_screening_unique)
-
-var_count_High <- sorted_other_High$sorted_tab_old_sillico %>% arrange(desc(Freq))
-length(unique(var_count_High$Genes))
-table(var_count_High$ClinVar_CLNSIG)
-length(unique(var_count_High$Variant_info))
-length(unique(var_count_High$patientID))
-length(unique(var_count_High$Disease))
+df_clinvar = do.call(rbind, list_clinvar)
+df_clinvar$ClinVar_CLNSIG <- sapply(strsplit(df_clinvar$ClinVar_CLNSIG,"&"), `[`, 1)
+df_clinvar$ClinVar_CLNSIG <- sapply(strsplit(df_clinvar$ClinVar_CLNSIG,"/"), `[`, 1)
+df_clinvar <- df_clinvar %>% filter(X.CHROM != 'chrM')
+df_puta = do.call(rbind, list_puta)
+df_puta <- df_puta %>% filter(X.CHROM != 'chrM')
 
 
-unique_diseases <- var_count_High %>%
-  distinct(Disease, .keep_all = TRUE)
-
-#table(unique_diseases$Inheritances)
-
-
-gene_count_clinvar <- var_count_High %>%  filter(ClinVar_CLNSIG == 'Pathogenic' | ClinVar_CLNSIG == 'Likely_pathogenic') %>%  group_by(Genes) %>%
-  summarise(Total_Freq = sum(Freq)) %>% arrange(desc(Total_Freq))
-
-```
-### SW
-```{r SW}
-High_screening <- get_P_LP_LoFs(df_temp_swedish)
-High_screening <- High_screening %>% filter(Genes %in% High_genes)
-High_screening_unique <- get_unique_variants(High_screening)
-sorted_other_High <- get_sorted_tab_sillico(High_screening,High_screening_unique)
-
-dim(var_count_High)
-var_count_High <- sorted_other_High$sorted_tab_old_sillico %>% arrange(desc(Freq))
-length(unique(var_count_High$Genes))
-table(var_count_High$ClinVar_CLNSIG)
-length(unique(var_count_High$Variant_info))
-length(unique(var_count_High$patientID))
-length(unique(var_count_High$Disease))
-
-
-unique_diseases <- var_count_High %>%
-  distinct(Disease, .keep_all = TRUE)
-
-table(unique_diseases$Inheritances)
-
-gene_count <- var_count_High %>%  group_by(Genes) %>%
-  summarise(Total_Freq = sum(Freq)) %>% arrange(desc(Total_Freq))
-
-```
-
-
-
-# 2. Figure 4A && per-sample statistics 
-### (for 5 types of variants:ClinVar variants, pLOFs, predicted risk variants, PGx variants, and GWAS variants)
-
-```{r get the data table}
-# per_sample statictics ===============
-# Loop over files and extract the "SZAID" column
-unique_szaid_count_TR <- length(unique(GWAS_TR$SZAvarID))
-print(unique_szaid_count_TR)
-unique_szaid_count_SW <- length(unique(GWAS_SW$SZAvarID))
-print(unique_szaid_count_SW)
-
-unique_szaid_count_TR <- length(unique(Pharmaco_TR$SZAvarID))
-print(unique_szaid_count_TR)
-unique_szaid_count_SW <- length(unique(Pharmaco_SW$SZAvarID))
-print(unique_szaid_count_SW)
-
-summary_data <- combined_GWAS %>%
-  group_by(patientID, Population) %>%
-  summarize(GWAS_Variants = n_distinct(SZAvarID))
-
-summary_data_PGx <- combined_pharmaco %>%
-  group_by(patientID, Population) %>%
-  summarize(Pharmaco_Variants = n_distinct(SZAvarID))
-
-summary_data$PGx_Variants = summary_data_PGx$Pharmaco_Variants
-
-summary_data_ClinVar <- combined_df %>%
-  group_by(patientID,Population) %>%
-  summarize(ClinVar_Variants = n_distinct(SZAID)) %>%
-  ungroup()
-
-summary_data$ClinVar_Variants = summary_data_ClinVar$ClinVar_Variants
-
-summary_data_sillico <- combined_sillico_df %>%
-  group_by(patientID,Population) %>%
-  summarize(sillico_Variants = n_distinct(SZAID)) %>%
-  ungroup()
-#summary_data$sillico_v = summary_data_sillico$sillico_Variants
-
-summary_data_pLoF <- combined_sillico_df %>% filter(IMPACT == "HIGH") %>%
-  group_by(patientID,Population) %>%
-  summarize(pLoF_Variants = n_distinct(SZAID)) %>%
-  ungroup()
-summary_data$pLoF = summary_data_pLoF$pLoF_Variants
-
-summary_data_prisk <- combined_sillico_df %>% filter(IMPACT != "HIGH") %>%
-  group_by(patientID,Population) %>%
-  summarize(prisk_Variants = n_distinct(SZAID)) %>%
-  ungroup()
-summary_data$prisk = summary_data_prisk$prisk_Variants
-
-summary_data <- melt(summary_data)
-
-summary_stats <- summary_data %>%
-  group_by(Population,variable) %>%
-  summarize(
-    min_count = min(value),
-    max_count = max(value),
-    median_count = median(value),
-    mean_count = mean(value)
-  )
-
-```
-
-```{r Create the violin plot}
-# Create the violin plot
-summary_data$Population <- factor(summary_data$Population, levels = c("Turkish", "Swedish"))
-summary_data$variable <-factor(summary_data$variable, levels = c("ClinVar_Variants", "pLoF","prisk","GWAS_Variants","PGx_Variants"))
-per_sample <- ggplot(summary_data, aes(x = variable, y = value, fill = Population)) +
-  geom_violin(scale='width',width=0.8) +
-  #geom_dotplot(aes(x = ClinVar_CLNSIG, y = count), binaxis = "y", stackdir = "center", dotsize = 0.5, fill = "black") +  # Add dots
-  #geom_boxplot(width = 0.2, fill = "white",color = "black") +
-  geom_boxplot(aes(x = variable, y = value, group = Population), fill = "white", width = 0.2, position = position_dodge(width = 0.75), color = "black")+
-  stat_compare_means( method = "t.test", aes(label = paste0("p=", after_stat(p.format))))+
-  labs(x = "Variant type", y = "count per sample",fill = "Population") +
-  scale_fill_nejm()  +  # Customize fill colors
-  theme_minimal()+
-  #facet_grid(variable ~ value, scales = "free", space = "free") + 
-  #facet_grid(.~Population, scales = "free_x", space = "free_x") +
-  facet_wrap(.~variable,scales = "free",ncol=3) +
-  theme(
-    axis.line = element_line(color = 'black'),
-    plot.background = element_blank(),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.border = element_blank(),
-    # Adjust font sizes
-    axis.text.x = element_text(size = 14),     # Font size for x-axis labels
-    axis.title.x = element_text(size = 16),    # Font size for x-axis title
-    axis.text.y = element_text(size = 14),     # Font size for y-axis labels
-    axis.title.y = element_text(size = 16),    # Font size for y-axis title
-    strip.text = element_text(size = 16),
-    legend.text = element_text(size = 14)
-  )
-  #geom_signif(comparisons = list(c("Turkish", "Swedish")), map_signif_level = TRUE, textsize = 4, textcolor = "black",test = "t.test")
-  #geom_text(data = summary_stats, aes(x = variable, y = min_count,group=Population,label = paste("Min:", min_count, "\nMax:", max_count, "\nMedian:", median_count)),position = position_dodge(width = 0.75),vjust = -0.5, hjust=-0.2,size = 2, fontface = "bold", color = "black", inherit.aes = FALSE)
-print(per_sample)
-ggsave(per_sample,filename = "/Users/xiyas/V2_Genome_reporting/Plots/per-sample.pdf",width = 9,height = 7)
-
-
-```
-
-
-### Back up: ClinVar variants detailed in Conflicts and pathogenic variants
-
-```{r per-sample statistics for clinvar variants}
+###group the two cohort
+df_clinvar$Population <- "Turkish"
+swe_df_clinvar$Population <- 'Swedish'
+# Combine the two data frames into one
+combined_df <- rbind(df_clinvar,swe_df_clinvar)
 combined_df$Population <- factor(combined_df$Population, levels = c("Turkish", "Swedish"))
+
+####per sample plot ====
 patient_counts <- combined_df %>%
   group_by(ClinVar_CLNSIG, patientID,Population) %>%
   summarize(count = n()) %>%
@@ -265,15 +59,12 @@ patient_counts <- combined_df %>%
 patient_counts <- patient_counts %>%
   mutate(ClinVar_CLNSIG = 
            ifelse(ClinVar_CLNSIG == "Conflicting_interpretations_of_pathogenicity", "Conflicts", ClinVar_CLNSIG))
-
-
 summary_stats <- patient_counts %>%
   group_by(Population,ClinVar_CLNSIG) %>%
   summarize(
     min_count = min(count),
     max_count = max(count),
-    median_count = median(count),
-    mean_count = mean(count)
+    median_count = median(count)
   )
 
 ### ====violin plot based on per sample statistics
@@ -303,54 +94,55 @@ ggplot(patient_counts, aes(x = ClinVar_CLNSIG, y = count, fill = Population)) +
   geom_text(data = summary_stats, aes(x = ClinVar_CLNSIG, y= max_count,label = paste("Min:", min_count, "\nMax:", max_count, "\nMedian:", median_count)),
             position = position_dodge(width = 0.75),
             vjust = -0.5, size = 3, fontface = "bold", color = "black", inherit.aes = FALSE)
-```
+  
 
-# 3. Figure 4B && Cohort-level ClinVar variants analysis : sorted_tab$SZAID is unique ClinVar variants for each cohort
+####2: count the clinvar statictics on unique variants, get sorted tab(distinguish zygosity)=============
+###get the no duplicated variants 
+test <- df_clinvar[!duplicated(df_clinvar$SZAID),]
+sorted_tab <- df_clinvar %>% group_by(SZAID, Zygosity)%>% summarise(count = n())%>%arrange(desc(count))
+sorted_tab <- merge(x=sorted_tab,y=test,by='SZAID',all.x = TRUE)
+sorted_tab <- sorted_tab %>% filter(X.CHROM != 'chrM')
+sorted_tab <- sorted_tab %>% arrange(desc(count))
+sorted_tab$ClinVar_CLNSIG <- sapply(strsplit(sorted_tab$ClinVar_CLNSIG,"&"), `[`, 1)
 
-```{r  make a data table: Clinvar varaints summary statistics}
-#note, only ClinVar variangs should remove duplicates by SZAID, if you include any of novel pLoFs/predicted risk variants, always use variant_info. because their SZAID contains patientID
+###get sorted tab_old (not distinguish zygosity)=============
+sorted_tab_old <- table(df_clinvar$SZAID) %>% 
+  as.data.frame() %>% 
+  arrange(desc(Freq))
+colnames(sorted_tab_old) <- c('SZAID','Freq')
+sorted_tab_old <- merge(x=sorted_tab_old,y=test,by='SZAID',all.x = TRUE)
+sorted_tab_old <- sorted_tab_old %>% filter(X.CHROM != 'chrM')
 
-# Clinvar varaints summary statistics
-t <- sorted_tab_TR$sorted_tab_old %>% filter(ClinVar_CLNSIG == "Conflicting_interpretations_of_pathogenicity")
+###make a plot for variant summary count Figure 4A------------
+noAF<- sorted_tab_old %>% filter(is.na(MAX_AF))
+table(noAF$ClinVar_CLNSIG)
+rareAF <- sorted_tab_old %>% filter(MAX_AF<0.05)
+table(rareAF$ClinVar_CLNSIG)
+CommonAF <- sorted_tab_old %>% filter(MAX_AF>=0.05)
+table(CommonAF$ClinVar_CLNSIG)
+#length(intersect(unique(sorted_tab_old$SZAID),unique(swe_sorted_tab_old$SZAID)))
 
+######Stacked barchart ============
 
-grouped_df_TR <- sorted_tab_TR$sorted_tab_old %>% group_by(MAX_AF_Category,ClinVar_CLNSIG)%>% summarise(count = n())%>%arrange(desc(count))
-grouped_df_TR$Population <- 'Turkish'
-grouped_df_TR$VaraintCount_sum <- 828
-grouped_df_TR$Proportion <- grouped_df_TR$count /828
-colnames(grouped_df_TR)[2] <- 'Pathogenicity'
-
-t1 <- sorted_tab_SW$sorted_tab_old %>% filter(ClinVar_CLNSIG == "Conflicting_interpretations_of_pathogenicity")
-
-grouped_df_SW <- sorted_tab_SW$sorted_tab_old %>% group_by(MAX_AF_Category,ClinVar_CLNSIG)%>% summarise(count = n())%>%arrange(desc(count))
-grouped_df_SW$Population <- 'Swedish'
-grouped_df_SW$VaraintCount_sum <- 453
-grouped_df_SW$Proportion <- grouped_df_SW$count /453
-colnames(grouped_df_SW)[2] <- 'Pathogenicity'
-
-
-grouped_df <- rbind(grouped_df_TR,grouped_df_SW)
-grouped_df <- grouped_df %>% mutate(Pathogenicity = 
-         ifelse(Pathogenicity == "Conflicting_interpretations_of_pathogenicity", "Conflicts", Pathogenicity))
-grouped_df <- grouped_df %>% mutate(Pathogenicity = 
-         ifelse(Pathogenicity == "Likely_pathogenic", "Pathogenic(P)/LP", Pathogenicity))
-grouped_df <- grouped_df %>% mutate(Pathogenicity = 
-         ifelse(Pathogenicity == "Pathogenic", "Pathogenic(P)/LP", Pathogenicity))
-
-
-grouped_df$Population <- factor(grouped_df$Population, levels = c("Turkish", "Swedish"))
-grouped_df$MAX_AF_Category <- factor(grouped_df$MAX_AF_Category, levels = c(
-    "No public MAX_AF","Public MAX_AF < 0.01","0.01 < Public MAX_AF < 0.05","Public MAX_AF >= 0.05"
-))
-
-print(grouped_df)
-```
-
-```{r  make a plot: Clinvar varaints summary plot}
-ggplot(grouped_df, aes(fill = MAX_AF_Category, y = count, x = Pathogenicity)) +
-  geom_bar(position = "stack", stat = "identity") + 
+# create a dataset
+Pathogenicity <- c(rep("Pathogenic" , 3) , rep("Likely Pathogenic" , 3) , rep("Conflicts" , 3))
+Max_AF <- rep(c("No_public AF" , "Public AF < 0.05" , "Public AF > =0.05") , 3)
+Variants_count <- c(40,274,21,18,66,1,2,342,64)
+group <- c(rep("Turkish", 9))
+data <- data.frame(Pathogenicity,Max_AF,Variants_count,group)
+# combine with swedish--------
+data <- rbind(data,data_swe)
+data$group <- factor(data$group, levels = c("Turkish", "Swedish"))
+group_sums <- aggregate(Variants_count ~ group, data, sum)
+# Merge the sum of counts back into the data
+data <- merge(data, group_sums, by = "group", suffixes = c("", "_sum"))
+# Calculate the proportion within each group
+data$Proportion <- data$Variants_count / data$Variants_count_sum
+# Stacked
+ggplot(data, aes(fill = Max_AF, y = Variants_count, x = Pathogenicity)) +
+  geom_bar(position = "dodge", stat = "identity") + 
   scale_fill_nejm() +
-  facet_grid(~ Population) +
+  facet_grid(~ group) +
   theme_bw() +
   theme(
     axis.line = element_line(color = 'black'),
@@ -359,50 +151,53 @@ ggplot(grouped_df, aes(fill = MAX_AF_Category, y = count, x = Pathogenicity)) +
     panel.grid.minor = element_blank(),
     panel.border = element_blank(),
     # Adjust font sizes
-    axis.text.x = element_text(size = 16,angle = 45, hjust = 1),# Font size for x-axis labels
-    axis.title.x = element_text(size = 18),    # Font size for x-axis title
-    axis.text.y = element_text(size = 16),     # Font size for y-axis labels
-    axis.title.y = element_text(size = 18),    # Font size for y-axis title
+    axis.text.x = element_text(size = 14),     # Font size for x-axis labels
+    axis.title.x = element_text(size = 16),    # Font size for x-axis title
+    axis.text.y = element_text(size = 14),     # Font size for y-axis labels
+    axis.title.y = element_text(size = 16),    # Font size for y-axis title
     strip.text = element_text(size = 16),
-    legend.text = element_text(size = 16)
-  ) 
-  #geom_text(aes(label = paste(Variants_count, " (", sprintf("%0.2f%%", Proportion * 100), ")", sep = "")), 
-            #position = position_dodge(width = 0.9), vjust = -0.5,size =4)
+    legend.text = element_text(size = 14)
+  ) +
+  geom_text(aes(label = paste(Variants_count, " (", sprintf("%0.2f%%", Proportion * 100), ")", sep = "")), 
+            position = position_dodge(width = 0.9), vjust = -0.5,size =4)
 
-```
+##Common plot  ===========
+###Common clinvar variants plot
 
-## 4. Figure 4C common ClinVar variants among two cohort
-```{r common ClinVar variants among two cohort}
-# common ClinVar variants among two cohort
-common_tab <- sorted_tab_TR$sorted_tab_old %>% filter(SZAID %in% intersect(unique(sorted_tab_TR$sorted_tab_old$SZAID),unique(sorted_tab_SW$sorted_tab_old$SZAID)))
-common_tab<- merge(common_tab,sorted_tab_SW$sorted_tab_old[,c("SZAID","Freq")],by='SZAID',all.x= TRUE)
-
-common_tab <- common_tab %>% select(SZAID, Freq.x,Freq.y,ClinVar_CLNSIG,Existing_variation,HGVSc,HGVSp,Database,MAX_AF_Category)
+common_tab <- sorted_tab_old %>% filter(SZAID %in% intersect(unique(sorted_tab_old$SZAID),unique(swe_sorted_tab_old$SZAID)))
+common_tab<- merge(common_tab,swe_sorted_tab_old[,c("SZAID","Freq")],by='SZAID',all.x= TRUE)
+common_tab <- common_tab %>% filter(SZAID %in% intersect(unique(sorted_tab_old$SZAID),unique(swe_sorted_tab_old$SZAID)))
+common_tab <- common_tab %>% select(SZAID, Freq.x,Freq.y,ClinVar_CLNSIG,Existing_variation,HGVSc,HGVSp,Database,MAX_AF)
 common_tab$Freq.x <- common_tab$Freq.x/275
 common_tab$Freq.y <- common_tab$Freq.y/101
 # Assuming you have a dataframe called common_tab with columns Freq.x, Freq.y, and Subclass
 # First, sort the dataframe by Freq.x in descending order and select the top 30 rows
 top_30_features <- head(arrange(common_tab, desc(Freq.x)), 30)
 
+ggplot(top_30_features, mapping = aes(x = SZAID, y = ClinVar_CLNSIG, fill = Freq.x)) +
+  geom_tile() +
+  geom_text(aes(label = Freq.x), vjust = 1) +  # Add labels for Freq.x values
+  scale_fill_gradient(low = "white", high = "blue") +  # Adjust the color scale
+  labs(x = "", y = "ClinVar_CLNSIG", fill = "Freq.x") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank())  #
+
 aggregated_data <- common_tab %>%
+  mutate(MAX_AF_Category = case_when(
+    is.na(MAX_AF) ~ "No_public AF",
+    MAX_AF < 0.05 ~ "Public AF < 0.05",
+    MAX_AF >= 0.05 ~ "Public AF >= 0.05"
+  )) %>%
   group_by(MAX_AF_Category,ClinVar_CLNSIG) %>%
   summarize(Variants_count = n())
-
 aggregated_data$Proportion <- aggregated_data$Variants_count / 180
 
 aggregated_data <- aggregated_data%>%mutate(ClinVar_CLNSIG = 
          ifelse(ClinVar_CLNSIG == "Conflicting_interpretations_of_pathogenicity", "Conflicts", ClinVar_CLNSIG))
 
-aggregated_data$MAX_AF_Category <- factor(aggregated_data$MAX_AF_Category, levels = c(
-    "No public MAX_AF","Public MAX_AF < 0.01","0.01 < Public MAX_AF < 0.05","Public MAX_AF >= 0.05"
-))
-
-```
-
-``` {r Backup: common ClinVar variants among two cohort}
 ggplot(aggregated_data, aes(fill = MAX_AF_Category, y = Variants_count, x = ClinVar_CLNSIG)) +
-  geom_bar(position = "stack", stat = "identity") + 
-  scale_fill_nejm()  +
+  geom_bar(position = "dodge", stat = "identity") + 
+  scale_fill_manual(values = c("#EFC000FF","#868686FF"))  +
   theme_bw() +
   theme(
     axis.line = element_line(color = 'black'),
@@ -411,91 +206,66 @@ ggplot(aggregated_data, aes(fill = MAX_AF_Category, y = Variants_count, x = Clin
     panel.grid.minor = element_blank(),
     panel.border = element_blank(),
     # Adjust font sizes
-    axis.text.x = element_text(size = 14,angle = 45, hjust = 1),     # Font size for x-axis labels
+    axis.text.x = element_text(size = 14),     # Font size for x-axis labels
     axis.title.x = element_text(size = 16),    # Font size for x-axis title
     axis.text.y = element_text(size = 14),     # Font size for y-axis labels
     axis.title.y = element_text(size = 16),    # Font size for y-axis title
     strip.text = element_text(size = 16),
     legend.text = element_text(size = 14)
-  )
-  #geom_text(aes(label = paste(Variants_count, " (", sprintf("%0.2f%%", Proportion * 100), ")", sep = "")), 
-            #position = position_dodge(width = 0.9), vjust = -0.5,size =4)
-```
+  ) +
+  geom_text(aes(label = paste(Variants_count, " (", sprintf("%0.2f%%", Proportion * 100), ")", sep = "")), 
+            position = position_dodge(width = 0.9), vjust = -0.5,size =4)
 
-
-```{r Backup}
-# both cohort most frequent Conflict varaints===========
+###both cohort most frequent ===========
 Conflict <- sorted_tab %>% filter(ClinVar_CLNSIG=='Conflicting_interpretations_of_pathogenicity')%>% filter(Freq >13)
 Conflict_swedish <- swe_sorted_tab_swedish %>% filter(ClinVar_CLNSIG=='Conflicting_interpretations_of_pathogenicity')%>% filter(Freq >5)
 intersect(Conflict$SZAID,Conflict_swedish$SZAID)
 
-```
 
-```{r make a plot: Figure 4C common variants heatmap}
+AD_genes <- 
+  unique(
+    Summary_DB %>% filter(grepl("Autosomal dominant",inheritances))%>% 
+      .$Genes
+  )
+AR_genes <- 
+  unique(
+    Summary_DB %>% filter(grepl("Autosomal recessive",inheritances))%>% 
+      .$Genes
+    )
+##excluded the variants with conflict interpretations, any Clinvar variants that have public AF >= 0.05 together with mitochondrial variants-----------
+sorted_tab_filter <- sorted_tab %>%filter(MAX_AF<0.05)%>%filter(ClinVar_CLNSIG!='Conflicting_interpretations_of_pathogenicity')
+###这个不太对
+sorted_tab_filter <-
+  sorted_tab_filter %>%
+  mutate(condition = case_when(Zygosity.x == "Homozygous" ~ "Positive",
+                                               Genes %in% AD_genes & Zygosity.x == "Heterozygous" ~ "Positive",
+                                               Genes %in% AR_genes & Zygosity.x == "Heterozygous" ~ "Carrier",
+                                               TRUE ~ "Unsure"))
+table(sorted_tab_filter[grepl('Basic',sorted_tab_filter$final_target_group),]$condition)
+## old is the dataframe didn;t split the zygosity on each individual level count, not old one is the seoarated one
+sorted_tab_old_filter <- sorted_tab_old %>%filter(MAX_AF<0.05)%>%filter(ClinVar_CLNSIG!='Conflicting_interpretations_of_pathogenicity')
+# Group by Genes and calculate the sum of Freq for each gene
+gene_counts <- sorted_tab_old_filter %>%
+  group_by(Genes) %>%
+  summarise(Total_Freq = sum(Freq))
 
-save_pheatmap_pdf <- function(x, filename, width=7, height=7) {
-   stopifnot(!missing(x))
-   stopifnot(!missing(filename))
-   pdf(filename, width=width, height=height)
-   grid::grid.newpage()
-   grid::grid.draw(x$gtable)
-   dev.off()
-}
-#############Before filteration ==============
-common_tab <- sorted_tab_TR$sorted_tab_old %>% filter(SZAID %in% intersect(unique(sorted_tab_TR$sorted_tab_old$SZAID),unique(sorted_tab_SW$sorted_tab_old$SZAID)))
+# Arrange the result in descending order of Total_Freq
+gene_counts <- gene_counts %>%
+  arrange(desc(Total_Freq))
 
-common_tab<- merge(common_tab,sorted_tab_SW$sorted_tab_old[,c("SZAID","Freq")],by='SZAID',all.x= TRUE)
+disease_counts <- sorted_tab_old_filter %>%
+  group_by(Disease) %>%
+  summarise(Total_Freq = sum(Freq))
 
-#common_tab <- common_tab %>% select(SZAID, Freq.x,Freq.y,ClinVar_CLNSIG,Existing_variation,HGVSc,HGVSp,Database,MAX_AF)
-common_tab$Freq.x <- common_tab$Freq.x/275
-common_tab$Freq.y <- common_tab$Freq.y/101
+# Print the table of genes with their total counts
+print(gene_counts)
+# Create a matrix of gene counts (rows = genes, columns = total frequency)
+gene_matrix <- data.frame(Genes = gene_counts$Genes, Total_Freq = gene_counts$Total_Freq)
 
-
-top_30_features <- head(arrange(common_tab, desc(Freq.x)), 30)
-top_30_features$Existing_variation <- sapply(strsplit(top_30_features$Existing_variation,"&"), `[`, 1)
-top_30_features <-top_30_features%>%
-  arrange(desc(Freq.x))%>% mutate(ClinVar_CLNSIG = 
-                                ifelse(ClinVar_CLNSIG == "Conflicting_interpretations_of_pathogenicity", "Conflicts", ClinVar_CLNSIG))
-
-rownames(top_30_features) <- paste0(top_30_features$Existing_variation,'-',top_30_features$Genes)
-
-annotation_row = data.frame(
-  Pathogenicity = top_30_features$ClinVar_CLNSIG,
-  Consequence = top_30_features$Consequence,
-  G_D_Confidence = top_30_features$Gene.Disease.confidence.level,
-  row.names = rownames(top_30_features)
-)
-
-ann_colors = list(
-  Pathogenicity = c(Likely_pathogenic = 'orange2', Pathogenic ='tomato3',Conflicts= 'grey'),
-  G_D_Confidence= c(High_confidence = 'brown', Moderate_confidence ='springgreen4'))
-
-top_30_features <-top_30_features %>% select(Existing_variation, Freq.x,Freq.y) 
-top_30_features$Existing_variation <- factor(top_30_features$Existing_variation, levels = top_30_features$Existing_variation[order(top_30_features$Freq.x, decreasing = TRUE)])
-
-top_30_features <- top_30_features[,-1]
-colnames(top_30_features) <- c('Turkish','Swedish')
-colours = colorRampPalette(c("navy", "white", "firebrick3"))(10)
-#top_30_features <- melt(top_30_features,id.vars='SZAID')
-
-plot <- pheatmap(top_30_features,cluster_rows = FALSE,color=colours,
-         annotation_row = annotation_row,annotation_colors = ann_colors)
-save_pheatmap_pdf(plot, "/Users/xiyas/V2_Genome_reporting/Plots/Figure4B.pdf")
-
-```
-## 5. Figure 5A ClinVar Variants filteration
-
-```{r}
-display_venn <- function(x, ...){
-  library(VennDiagram)
-  grid.newpage()
-  venn_object <- venn.diagram(x, filename = NULL, ...)
-  grid.draw(venn_object)
-}
-
+####venn diagram ========Figure 4B
 x <- list(
-  set1 <- unique(sorted_tab_TR_filter$sorted_tab_old_filter$SZAID),
-  set2 <- unique(sorted_tab_SW_filter$sorted_tab_old_filter$SZAID)
+  set1 <- unique(sorted_tab_filter$SZAID),
+  set2 <- unique(sorted_tab_swedish_filter$SZAID)
 )
 display_venn(
   x,
@@ -503,642 +273,276 @@ display_venn(
   fill = pal_jco("default")(2)
 )
 
-length(table(sorted_tab_TR_filter$sorted_tab_old_filter$patientID))
-length(table(sorted_tab_TR_filter$sorted_tab_old_filter$Genes))
-length(table(sorted_tab_SW_filter$sorted_tab_old_filter$patientID))
+# Display the Venn diagram
+grid.draw(venn.plot)
+
+## ACMG 78 genes Healthy risk 
+df_clinvar_filter <- df_clinvar %>% filter(MAX_AF<0.05)%>%filter(ClinVar_CLNSIG!='Conflicting_interpretations_of_pathogenicity')
+df_clinvar_filter<-
+  df_clinvar_filter %>%
+  mutate(condition = case_when(Zygosity == "Homozygous" ~ "Positive",
+                               Genes %in% AD_genes & Zygosity == "Heterozygous" ~ "Positive",
+                               Genes %in% AR_genes & Zygosity== "Heterozygous" ~ "Carrier",
+                               TRUE ~ "Unsure"))
+#df_puta_filter <- df_puta %>% filter(MAX_AF<0.05)%>%filter(ClinVar_CLNSIG!='Conflicting_interpretations_of_pathogenicity')
 
 
-##PAH highest unique number of P/LP variants,followed by ABCA4 and CFTR
-test <-as.data.frame(table(sorted_tab_TR_filter$sorted_tab_old_filter$Genes)) 
-## SW:
-test <-as.data.frame(table(sorted_tab_SW_filter$sorted_tab_old_filter$Genes)) 
-
-```
-
-## 6. Figure 5B common variants heatmap but After MAF filteration and discard Conflicts variants
-
-```{r}
-
-save_pheatmap_pdf <- function(x, filename, width=6.3, height=7) {
-   stopifnot(!missing(x))
-   stopifnot(!missing(filename))
-   pdf(filename, width=width, height=height)
-   grid::grid.newpage()
-   grid::grid.draw(x$gtable)
-   dev.off()
-}
-common_tab <- sorted_tab_TR_filter$sorted_tab_old_filter %>% filter(SZAID %in% intersect(unique(sorted_tab_TR_filter$sorted_tab_old_filter$SZAID),unique(sorted_tab_SW_filter$sorted_tab_old_filter$SZAID)))
-
-common_tab<- merge(common_tab,sorted_tab_SW_filter$sorted_tab_old_filter[,c("SZAID","Freq")],by='SZAID',all.x= TRUE)
-#common_tab <- common_tab %>% select(SZAID, Freq.x,Freq.y,ClinVar_CLNSIG,Existing_variation,HGVSc,HGVSp,Database,MAX_AF,Genes)
-common_tab$Freq.x <- common_tab$Freq.x/275
-common_tab$Freq.y <- common_tab$Freq.y/101
-common_tab$Consequence<- sapply(strsplit(common_tab$Consequence,"&"), `[`, 1)
-
-top_30_features <- head(arrange(common_tab, desc(Freq.x)), 31)
-top_30_features$Existing_variation <- sapply(strsplit(top_30_features$Existing_variation,"&"), `[`, 1)
-
-top_30_features <-top_30_features%>%
-  arrange(desc(Freq.x))%>% mutate(ClinVar_CLNSIG = 
-                                    ifelse(ClinVar_CLNSIG == "Conflicting_interpretations_of_pathogenicity", "Conflicts", ClinVar_CLNSIG))
-rownames(top_30_features) <- paste0(top_30_features$Existing_variation,'-',top_30_features$Genes)
-
-annotation_row = data.frame(
-  Pathogenicity = top_30_features$ClinVar_CLNSIG,
-  Consequence = top_30_features$Consequence,
-  G_D_Confidence = top_30_features$Gene.Disease.confidence.level,
-  row.names = rownames(top_30_features)
-)
-
-ann_colors = list(
-  Pathogenicity = c(Likely_pathogenic = 'orange2', Pathogenic ='tomato3'),
-  G_D_Confidence= c(High_confidence = 'brown', Moderate_confidence ='springgreen4'))
-
-top_30_features <-top_30_features %>% select(Existing_variation, Freq.x,Freq.y) 
-top_30_features$Existing_variation <- factor(top_30_features$Existing_variation, levels = top_30_features$Existing_variation[order(top_30_features$Freq.x, decreasing = TRUE)])
-
-top_30_features <- top_30_features[,-1]
-colnames(top_30_features) <- c('Turkish','Swedish')
-colours = colorRampPalette(c("navy", "white", "firebrick3"))(10)
-#top_30_features <- melt(top_30_features,id.vars='SZAID')
-
-plot <-pheatmap(top_30_features,cluster_rows = FALSE,color=colours,
-         annotation_row = annotation_row,annotation_colors = ann_colors)
-
-save_pheatmap_pdf(plot, "/Users/xiyas/V2_Genome_reporting/Plots/Figure5B.pdf")
-```
+ACMG <- df_clinvar_filter %>% filter(final_target_group=='Basic (for healthy subjects),Usually used for:Health predipositions/Disease risk')
+write.xlsx(ACMG[,c('Genes','Disease','Existing_variation','HGVSc','Inheritances')],'/Users/xiyas/V2_Genome_reporting/table2.xlsx', sheetName = "Sheet1")
 
 
-# 7. Gene based analysis to explore the diseases- TR filtered variants analysis
-```{r Gene Based Analysis - TR Filtered Variants}
-# 7. Gene Based Analysis - TR Filtered Variants Analysis
-# Goal: Perform gene-based analysis on TR filtered variants. Exclude variants with conflicting interpretations and any Clinvar variants with public AF >= 0.05.
+##===== putative variants
+table(df_puta$MAX_AF < 0.05)
 
-# Note: 'sorted_tab_TR_filter$sorted_tab_old_filter' only contains Clinvar variants
-# Calculate the total frequency for each gene
-gene_counts_TR <- sorted_tab_TR_filter$sorted_tab_old_filter %>%
-  group_by(Genes) %>%
-  summarise(Total_Freq = sum(Freq)) %>%
-  arrange(desc(Total_Freq))
+table(is.na(df_puta$MAX_AF))
 
-# Map genes to diseases and filter out low confidence associations
-# Attention: ADHD for DRD4/DRD5 genes
-gene_disease_mapping <- merge(gene_counts_TR, GeneDB, by = c("Genes" = "Genes")) %>%
-  arrange(desc(Total_Freq)) %>%
-  filter(Gene.Disease.confidence.level != "Low_confidence")
-#length(unique(gene_disease_mapping$Disease))
-# Display top 5 diseases and genes
-print("Top 5 Diseases (TR):")
-print(gene_disease_mapping$Disease[1:5])
-print("Corresponding Genes (TR):")
-print(gene_disease_mapping$Genes[1:5])
-print("Distribution of Gene-Disease Confidence Levels (TR):")
-table(gene_disease_mapping$Gene.Disease.confidence.level)
-
-# Repeat the analysis for Swedish data
-gene_counts_SW <- sorted_tab_SW_filter$sorted_tab_old_filter %>%
-  group_by(Genes) %>%
-  summarise(Total_Freq = sum(Freq)) %>%
-  arrange(desc(Total_Freq))
-
-gene_disease_mapping_SW <- merge(gene_counts_SW, GeneDB, by = c("Genes" = "Genes")) %>%
-  arrange(desc(Total_Freq)) %>%
-  filter(Gene.Disease.confidence.level != "Low_confidence")
-
-# Display top 5 diseases and genes for Swedish data
-print("Top 5 Diseases (SW):")
-print(gene_disease_mapping_SW$Disease[1:5])
-print("Corresponding Genes (SW):")
-print(gene_disease_mapping_SW$Genes[1:5])
-print("Distribution of Gene-Disease Confidence Levels (SW):")
-table(gene_disease_mapping_SW$Gene.Disease.confidence.level)
-
-
-```
-# 8. Figure 6 A/B && Gene_frequencies_barplot ranking by ClinVar Variants
-### 1. Turkish clinvar
-```{r make a data table}
-
-gene_selected_TR = gene_counts_TR$Genes[1:30]
-temp_table <- sorted_tab_TR_filter$sorted_tab_old_filter
-
-# adding frequency group information
-temp_table <- 
-  temp_table %>% 
-  mutate(group = case_when(Freq == 1 ~ "count(1)",
-                           Freq > 1 & Freq <= 5 ~ "count(2~5)",
-                           Freq > 5 & Freq <= 10 ~ "count(5~10)",
-                           Freq > 10 & Freq <= 15 ~ "count(10~15)",
-                           Freq > 15 & Freq <= 20 ~ "count(15~20)",
-                           Freq > 20 & Freq <= 25 ~ "count(20~25)",
-                           Freq > 25 & Freq <= 30 ~ "count(25~30)",
-                           Freq > 30 & Freq <= 35 ~ "count(30~35)",
-                           Freq > 35 & Freq <= 40 ~ "count(35~40)",
-                           Freq > 40 ~ "count(>40)"
-  )) %>% 
-  arrange(-desc(Genes), -desc(group)) %>% 
-  as_tibble()
-
-# Selected df with top30 genes
-temp_table_selected <- 
-  temp_table[temp_table$Genes %in%gene_selected_TR,] %>% 
-  arrange(-desc(Genes), desc(Freq))
-
-```
-
-```{r Back up: plotting way 1}
-
-desired_levels <- c(
-  "count(1)", "count(2~5)", "count(5~10)", "count(10~15)", "count(15~20)",
-  "count(20~25)", "count(25~30)", "count(30~35)", "count(35~40)", "count(>40)"
-)
-
-temp_table_selected$group <- factor(temp_table_selected$group,levels = desired_levels)
-temp_table_selected %>%  
-  ggplot(aes(x = Genes, y = Freq, fill = group)) +
-  geom_bar(stat="identity", color = "white") +
-  scale_x_discrete(limits = gene_selected_TR) +
-  scale_y_continuous(expand = c(0,0), limits = c(0, 30)) +
-  theme_bw() +
-  scale_fill_manual(values = RColorBrewer::brewer.pal(n = 10, name = "RdYlBu")[c(6,8,10,5,4,3,1)]) +
-  ggtitle("Turkish P/LP carrier frequency") +
-  theme(
-    panel.border = element_blank(),
-    panel.grid.minor = element_line(size = 0.5, colour = "grey"),
-    panel.grid.major = element_blank(),
-    plot.title = element_text(size = 18, hjust = 0.5, face = "bold"),
-    axis.line = element_line(size = 0.5, colour = "black"),
-    axis.title = element_text(size = 15, colour = "black"),
-    axis.text.y = element_text(size = 12, colour = "black"),
-    axis.text.x = element_text(size = 12, colour = "black", angle = 315, vjust = 0.5, hjust = 0)
-  )
-
-```
-### 2. Turkish sillico
-```{r make a data table}
-# same code for sillico_pLOFs
-# SZAID_assign is similar to sorted_tab_old, only focused on unique alternative alleles, Variant_info is for genotype specific
-
-# temp_table_sillico = sorted_tab_TR_sillico$sorted_tab_old_sillico
-temp_table_sillico  <-  sorted_tab_TR_sillico$sorted_tab_old_sillico
-
-
-# adding frequency group information
-temp_table_sillico <- 
-  temp_table_sillico %>% 
-  mutate(group = case_when(Freq == 1 ~ "count(1)",
-                           Freq > 1 & Freq <= 5 ~ "count(2~5)",
-                           Freq > 5 & Freq <= 10 ~ "count(5~10)",
-                           Freq > 10 & Freq <= 15 ~ "count(10~15)",
-                           Freq > 15 & Freq <= 20 ~ "count(15~20)",
-                           Freq > 20 & Freq <= 25 ~ "count(20~25)",
-                           Freq > 25 & Freq <= 30 ~ "count(25~30)",
-                           Freq > 30 & Freq <= 35 ~ "count(30~35)",
-                           Freq > 35 & Freq <= 40 ~ "count(35~40)",
-                           Freq > 40 ~ "count(>40)"
-  )) %>% 
-  arrange(-desc(Genes), -desc(group)) %>% 
-  as_tibble()
-
-# Selected df with top30 ClinVar genes
-temp_table_sillico_selected <- 
-  temp_table_sillico[temp_table_sillico$Genes %in% gene_selected_TR,] %>% 
-  arrange(-desc(Genes), desc(Freq))
-
-temp_table_sillico_selected$Freq <- -(temp_table_sillico_selected$Freq)
-
-merge_col <- c('Genes','Freq','group','IMPACT')
-
-temp_table_sillico_selected_cut <-temp_table_sillico_selected %>% select(merge_col)
-temp_table_selected_cut <-temp_table_selected %>% select(merge_col)
-
-merge_df_TR <- rbind(temp_table_selected_cut,temp_table_sillico_selected_cut)
-merge_df_TR$tag_value <-  ifelse(merge_df_TR$IMPACT == "HIGH", TRUE, FALSE)
-dim(merge_df_TR)
-
-
-```
-
-### 3. Merged and customized plot
-```{r ploting way 1 --- Backup}
-High_genes <-GeneDB %>% filter(Gene.Disease.confidence.level == "High_confidence") %>% select(Genes)
-confidence_setting <- ifelse(gene_selected_TR %in% High_genes$Genes, "dark blue", "black")
-## label the putative variants where impact == "HIGH"
-merge_df_TR$hLoFs_setting <- ifelse(merge_df_TR$Freq < 0 & merge_df_TR$IMPACT == "HIGH", TRUE, FALSE)
-text_data <- subset(merge_df_TR,hLoFs_setting ==TRUE)
-
-merge_df_TR %>%  
-  ggplot(aes(x = Genes, y = Freq, fill = group)) +
-  #geom_bar_pattern(stat="identity", color = "white",position = position_stack()) +
-  geom_bar(stat="identity", color = "white") +
-  scale_x_discrete(limits = gene_selected_TR) +
-  scale_y_continuous(expand = c(0,0), limits = c(-35, 30)) +
-  theme_bw() +
-  scale_fill_manual(values = RColorBrewer::brewer.pal(n = 10, name = "RdYlBu")[c(6,8,10,5,4,3,1)]) +
-  ggtitle("Turkish carrier frequency grouped by top 30 genes") +
-  geom_text(data = text_data,aes(label = "*") ,size =4.5, position = position_stack(vjust = 0.5), color = "black") + 
-  theme(
-    panel.border = element_blank(),
-    panel.grid.minor = element_line(size = 0.5, colour = "grey"),
-    panel.grid.major = element_blank(),
-    plot.title = element_text(size = 18, hjust = 0.5, face = "bold"),
-    axis.line = element_line(size = 0.5, colour = "black"),
-    axis.title = element_text(size = 15, colour = "black"),
-    axis.text.y = element_text(size = 12, colour = "black"),
-    axis.text.x = element_text(size = 12, color = confidence_setting, angle = 315, vjust = 0.5, hjust = 0)
-  )
-
-```
-###  Gene count numbers
-```{r}
-merge_df_TR %>% select(Genes,Freq) %>% filter(Freq >0) %>% group_by(Genes)%>% summarise(Freq = sum(Freq)) %>%
+####2: count the clinvar statictics among samples
+puta_sorted_tab <- table(df_puta$Variant_info) %>% 
+  as.data.frame() %>% 
   arrange(desc(Freq))
 
-individuals <- df_temp_turkish[df_temp_turkish$Database == "988867",]$patientID
-individuals <- sapply(strsplit(individuals, "\\."), `[`, 1)
-a <-family %>% filter(patientID %in% individuals) 
-```
+colnames(puta_sorted_tab) <- c('Variant_info','Freq')
+test_puta <- df_puta[!duplicated(df_puta$Variant_info),]
+test_puta$ClinVar_CLNSIG <- sapply(strsplit(test_puta$ClinVar_CLNSIG,"&"), `[`, 1)
+puta_sorted_tab <- merge(x=puta_sorted_tab,y=test_puta,by='Variant_info',all.x = TRUE)
+puta_sorted_tab <- puta_sorted_tab %>% arrange(desc(Freq))
+#sorted_tab_puta$ClinVar_CLNSIG <- sapply(strsplit(sorted_tab_puta$ClinVar_CLNSIG,"&"), `[`, 1)
+#sorted_tab$AC <- sapply(strsplit(sorted_tab$INFO,"&"), `[`, 1)
 
-```{r}
-merge_df_TR %>% filter(Freq >0) %>% group_by(Genes)%>% summarise(count = n()) %>%
-  arrange(desc(count))
-```
+####remove mitochondrial genes ------------
+puta_sorted_tab <- puta_sorted_tab %>% filter(X.CHROM != 'chrM')
 
-### 4. Swedish clinvar
-```{r}
-
-gene_selected_SW = gene_counts_SW$Genes[1:30]
-temp_table <- sorted_tab_SW_filter$sorted_tab_old_filter
-
-# adding frequency group information
-temp_table <- 
-  temp_table %>% 
-  mutate(group = case_when(Freq == 1 ~ "count(1)",
-                           Freq > 1 & Freq <= 5 ~ "count(2~5)",
-                           Freq > 5 & Freq <= 10 ~ "count(5~10)",
-                           Freq > 10 & Freq <= 15 ~ "count(10~15)",
-                           Freq > 15 & Freq <= 20 ~ "count(15~20)",
-                           Freq > 20 & Freq <= 25 ~ "count(20~25)",
-                           Freq > 25 & Freq <= 30 ~ "count(25~30)",
-                           Freq > 30 & Freq <= 35 ~ "count(30~35)",
-                           Freq > 35 & Freq <= 40 ~ "count(35~40)",
-                           Freq > 40 ~ "count(>40)"
-  )) %>% 
-  arrange(-desc(Genes), -desc(group)) %>% 
-  as_tibble()
-
-# Selected df with top30 genes
-temp_table_selected <- 
-  temp_table[temp_table$Genes %in%gene_selected_SW,] %>% 
-  arrange(-desc(Genes), desc(Freq))
-
-
-```
-
-```{Backup: r plotting way 1}
-
-desired_levels <- c(
-  "count(1)", "count(2~5)", "count(5~10)", "count(10~15)", "count(15~20)",
-  "count(20~25)", "count(25~30)", "count(30~35)", "count(35~40)", "count(>40)"
-)
-
-temp_table_selected$group <- factor(temp_table_selected$group,levels = desired_levels)
-temp_table_selected %>%  
-  ggplot(aes(x = Genes, y = Freq, fill = group)) +
-  geom_bar(stat="identity", color = "white") +
-  scale_x_discrete(limits = gene_selected_SW) +
-  scale_y_continuous(expand = c(0,0), limits = c(0, 30)) +
-  theme_bw() +
-  scale_fill_manual(values = RColorBrewer::brewer.pal(n = 10, name = "RdYlBu")[c(6,8,10,5,4,3,1)]) +
-  ggtitle("Swedish P/LP carrier frequency") +
-  theme(
-    panel.border = element_blank(),
-    panel.grid.minor = element_line(size = 0.5, colour = "grey"),
-    panel.grid.major = element_blank(),
-    plot.title = element_text(size = 18, hjust = 0.5, face = "bold"),
-    axis.line = element_line(size = 0.5, colour = "black"),
-    axis.title = element_text(size = 15, colour = "black"),
-    axis.text.y = element_text(size = 12, colour = "black"),
-    axis.text.x = element_text(size = 12, colour = "black", angle = 315, vjust = 0.5, hjust = 0)
+####Category figure 5A
+library(dplyr)
+puta_sorted_tab <- puta_sorted_tab %>%
+  mutate(group =
+    case_when(IMPACT == 'HIGH' ~ "Impact_High(LoFs)",
+              ada_score > 0.6 ~ "ada_score>0.6",
+              rf_score > 0.6 ~ "rf_score >0.6",
+              SpliceAI_pred_DS_AG > 0.5 ~ "SpliceAI_pred_DS_AG>0.5",
+              SpliceAI_pred_DS_AL > 0.5 ~ "SpliceAI_pred_DS_AL>0.5",
+              SpliceAI_pred_DS_DG > 0.5 ~ "SpliceAI_pred_DS_DG>0.5",
+              SpliceAI_pred_DS_DL > 0.5 ~ "SpliceAI_pred_DS_DL>0.5",
+              REVEL > 0.75 ~ "REVEL>0.75",
+              BayesDel_addAF_score > 0.0692655 ~ "BayesDel_addAF_score >0.0692655 ",
+              BayesDel_noAF_score > -0.0570105 ~ "BayesDel_noAF_score >-0.0570105"
+    ),
+    "Other"
   )
 
-```
-
-### 5. Swedish sillico
-```{r}
-# same code for sillico_pLOFs
-# SZAID_assign is similar to sorted_tab_old, only focused on unique alternative alleles, Variant_info is for genotype specific
-# sorted_tab_SW_sillico
-
-temp_table_sillico_SW <- sorted_tab_SW_sillico$sorted_tab_old_sillico
-# adding frequency group information
-temp_table_sillico_SW <- 
-  temp_table_sillico_SW %>% 
-  mutate(group = case_when(Freq == 1 ~ "count(1)",
-                           Freq > 1 & Freq <= 5 ~ "count(2~5)",
-                           Freq > 5 & Freq <= 10 ~ "count(5~10)",
-                           Freq > 10 & Freq <= 15 ~ "count(10~15)",
-                           Freq > 15 & Freq <= 20 ~ "count(15~20)",
-                           Freq > 20 & Freq <= 25 ~ "count(20~25)",
-                           Freq > 25 & Freq <= 30 ~ "count(25~30)",
-                           Freq > 30 & Freq <= 35 ~ "count(30~35)",
-                           Freq > 35 & Freq <= 40 ~ "count(35~40)",
-                           Freq > 40 ~ "count(>40)"
-  )) %>% 
-  arrange(-desc(Genes), -desc(group)) %>% 
-  as_tibble()
-
-# Selected df with top30 genes
-temp_table_sillico_selected <- 
-  temp_table_sillico_SW[temp_table_sillico_SW$Genes %in% gene_selected_SW,] %>% 
-  arrange(-desc(Genes), desc(Freq))
-
-temp_table_sillico_selected$Freq <- -(temp_table_sillico_selected$Freq)
-
-merge_col <- c('Genes','Freq','group','IMPACT')
-
-temp_table_sillico_selected_cut <-temp_table_sillico_selected %>% select(merge_col)
-temp_table_selected_cut <-temp_table_selected %>% select(merge_col)
-
-merge_df_SW <- rbind(temp_table_selected_cut,temp_table_sillico_selected_cut)
-merge_df_SW$tag_value <-  ifelse(merge_df_SW$IMPACT == "HIGH", TRUE, FALSE)
-dim(merge_df_SW)
-
-```
-
-### 6. Merged and customized plot
-```{r Backup: Swedish ClinVar: make a plot (plotting way 1)}
-#High_genes <-GeneDB %>% filter(Gene.Disease.confidence.level == "High_confidence") %>% select(Genes)
-confidence_setting <- ifelse(gene_selected_SW %in% High_genes$Genes, "dark blue", "black")
-## label the putative variants where impact == "HIGH"
-merge_df_SW$hLoFs_setting <- ifelse(merge_df_SW$Freq < 0 & merge_df_SW$IMPACT == "HIGH", TRUE, FALSE)
-text_data <- subset(merge_df_SW,hLoFs_setting ==TRUE)
-merge_df_SW %>%  
-  ggplot(aes(x = Genes, y = Freq, fill = group)) +
-  #geom_bar_pattern(stat="identity", color = "white",position = position_stack()) +
-  geom_bar(stat="identity", color = "white") +
-  scale_x_discrete(limits = gene_selected_SW) +
-  scale_y_continuous(expand = c(0,0), limits = c(-35, 30)) +
-  theme_bw() +
-  scale_fill_manual(values = RColorBrewer::brewer.pal(n = 10, name = "RdYlBu")[c(6,8,10,5,4,3,1)]) +
-ggtitle("Swedish carrier frequency grouped by top 30 genes") +
-  geom_text(data = text_data,aes(label = "*") ,size =4.5, position = position_stack(vjust = 0.5), color = "black") + 
-  theme(
-    panel.border = element_blank(),
-    panel.grid.minor = element_line(size = 0.5, colour = "grey"),
-    panel.grid.major = element_blank(),
-    plot.title = element_text(size = 18, hjust = 0.5, face = "bold"),
-    axis.line = element_line(size = 0.5, colour = "black"),
-    axis.title = element_text(size = 15, colour = "black"),
-    axis.text.y = element_text(size = 12, colour = "black"),
-    axis.text.x = element_text(size = 12, color = confidence_setting, angle = 315, vjust = 0.5, hjust = 0)
-  )
-
-
-```
-
-
-
-```{r}
-
-# temp_table_sillico_SW <- sorted_tab_SW_sillico$sorted_tab_old_sillico
-
-temp_table_sillico_TR <- temp_table_sillico
-temp_table_sillico_TR <- temp_table_sillico_TR %>%
-  mutate(predicted_reason = paste0(
-    ifelse(IMPACT == 'HIGH', "Impact_High(LoFs);", ""),
-    ifelse(ada_score > 0.6, "ada_score>0.6;", ""),
-    ifelse(rf_score > 0.6, "rf_score>0.6;", ""),
-    ifelse(SpliceAI_pred_DS_AG > 0.5, "SpliceAI_pred_DS_AG>0.5;", ""),
-    ifelse(SpliceAI_pred_DS_AL > 0.5, "SpliceAI_pred_DS_AL>0.5;", ""),
-    ifelse(SpliceAI_pred_DS_DG > 0.5, "SpliceAI_pred_DS_DG>0.5;", ""),
-    ifelse(SpliceAI_pred_DS_DL > 0.5, "SpliceAI_pred_DS_DL>0.5;", ""),
-    ifelse(REVEL > 0.75, "REVEL>0.75;", ""),
-    ifelse(BayesDel_addAF_score > 0.0692655, "BayesDel_addAF_score>0.0692655;", ""),
-    ifelse(BayesDel_noAF_score > -0.0570105, "BayesDel_noAF_score>-0.0570105;", "")
+puta_sorted_tab <- puta_sorted_tab %>%
+  mutate(MAX_AF_Category = case_when(
+    is.na(MAX_AF) ~ "No_public AF",
+    MAX_AF < 0.05 ~ "Public AF < 0.05",
+    MAX_AF >= 0.05 ~ "Public AF >= 0.05"
   ))
-temp_table_sillico_TR$hLoFs_setting <- ifelse(temp_table_sillico_TR$IMPACT == "HIGH", TRUE, FALSE)
-
-
-temp_table_sillico_TR <- temp_table_sillico_TR %>%
+puta_sorted_tab['Existing_variation'][puta_sorted_tab['Existing_variation'] ==''] <-NA
+table(is.na(puta_sorted_tab$Existing_variation),puta_sorted_tab$MAX_AF_Category)
+puta_sorted_tab <- puta_sorted_tab %>%
   mutate(Novel_or_Existing = case_when(
-    Existing_variation =='' ~ "Novel variants",
-    Existing_variation !='' ~ "Existing variants"
+    is.na(Existing_variation) ~ "Novel variants",
+    !is.na(Existing_variation) ~ "Existing variants"
   ))
 
-table(temp_table_sillico_TR$hLoFs_setting)
-```
+puta_sorted_tab$group <- factor(puta_sorted_tab$group)
 
+# Reorder the levels of the "group" factor variable
+puta_sorted_tab$group <- relevel(puta_sorted_tab$group, ref = "Impact_High(LoFs)")
 
-```{r}
+#Get the contingency table
+contingency_table <- table(puta_sorted_tab$Novel_or_Existing,puta_sorted_tab$group, puta_sorted_tab$MAX_AF_Category)
 
-# temp_table_sillico_SW <- sorted_tab_SW_sillico$sorted_tab_old_sillico
+# Print the contingency table
+print(contingency_table)
+contingency_df <- as.data.frame(contingency_table)
 
-temp_table_sillico_SW <- temp_table_sillico_SW %>%
-  mutate(predicted_reason = paste0(
-    ifelse(IMPACT == 'HIGH', "Impact_High(LoFs);", ""),
-    ifelse(ada_score > 0.6, "ada_score>0.6;", ""),
-    ifelse(rf_score > 0.6, "rf_score>0.6;", ""),
-    ifelse(SpliceAI_pred_DS_AG > 0.5, "SpliceAI_pred_DS_AG>0.5;", ""),
-    ifelse(SpliceAI_pred_DS_AL > 0.5, "SpliceAI_pred_DS_AL>0.5;", ""),
-    ifelse(SpliceAI_pred_DS_DG > 0.5, "SpliceAI_pred_DS_DG>0.5;", ""),
-    ifelse(SpliceAI_pred_DS_DL > 0.5, "SpliceAI_pred_DS_DL>0.5;", ""),
-    ifelse(REVEL > 0.75, "REVEL>0.75;", ""),
-    ifelse(BayesDel_addAF_score > 0.0692655, "BayesDel_addAF_score>0.0692655;", ""),
-    ifelse(BayesDel_noAF_score > -0.0570105, "BayesDel_noAF_score>-0.0570105;", "")
-  ))
-temp_table_sillico_SW$hLoFs_setting <- ifelse(temp_table_sillico_SW$IMPACT == "HIGH", TRUE, FALSE)
-
-
-temp_table_sillico_SW <- temp_table_sillico_SW %>%
-  mutate(Novel_or_Existing = case_when(
-    Existing_variation =='' ~ "Novel variants",
-    Existing_variation !='' ~ "Existing variants"
-  ))
-table(temp_table_sillico_SW$hLoFs_setting)
-```
-
-###  Gene count numbers
-```{r}
-merge_df_SW %>% select(Genes,Freq) %>% filter(Freq >0) %>% group_by(Genes)%>% summarise(Freq = sum(Freq)) %>%
-  arrange(desc(Freq))
-merge_df_SW  %>% filter(Freq >0) %>% group_by(Genes)%>% summarise(count = n()) %>%
-  arrange(desc(count))
-
-```
-
-
-
-# 9. Gene_frequencies_barplot === Ranking by predicted risk variants
-
-```{r making a data table}
-
-#temp_table_sillico = sorted_tab_TR_sillico$sorted_tab_old_sillico
-#temp_table_sillico  <-  sorted_tab_TR_sillico$sorted_tab_old_sillico
-gene_counts_TR_silloco <- temp_table_sillico %>%
-  group_by(Genes) %>%
-  summarise(Total_Freq = sum(Freq)) %>% arrange(desc(Total_Freq))
-gene_selected_TR_sillico = gene_counts_TR_silloco$Genes[1:30]
-
-# Selected df with top30 ClinVar genes
-temp_table_sillico_selected <- 
-  temp_table_sillico[temp_table_sillico$Genes %in% gene_selected_TR_silloco,] %>% 
-  arrange(-desc(Genes), desc(Freq))
-
-temp_table_selected <- 
-  temp_table[temp_table$Genes %in%gene_selected_TR_silloco,] %>% 
-  arrange(-desc(Genes), desc(Freq))
-
-merge_col <- c('Genes','Freq','group','IMPACT')
-temp_table_sillico_selected_cut <-temp_table_sillico_selected %>% select(merge_col)
-temp_table_selected_cut <-temp_table_selected %>% select(merge_col)
-
-temp_table_selected_cut$Freq <- -(temp_table_selected_cut$Freq)
-merge_df_TR <- rbind(temp_table_selected_cut,temp_table_sillico_selected_cut)
-
-merge_df_TR$tag_value <-  ifelse(merge_df_TR$IMPACT == "HIGH", TRUE, FALSE)
-dim(merge_df_TR)
-
-
-```
-
-```{r backup: make a plot (way 1, not suitable for sillico variants because too much)}
-merge_df_TR$hLoFs_setting <- ifelse(merge_df_TR$Freq > 0 & merge_df_TR$IMPACT == "HIGH", TRUE, FALSE)
-#text_data <- subset(merge_df_TR,hLoFs_setting ==TRUE)
-merge_df_TR$group <- factor(merge_df_TR$group,levels = desired_levels)
-merge_df_TR %>%  
-  ggplot(aes(x = Genes, y = Freq, fill = group)) +
-  #geom_bar_pattern(stat="identity", color = "white",position = position_stack()) +
-  geom_bar(stat="identity", color = "white") +
-  scale_x_discrete(limits = gene_selected_TR_silloco) +
-  scale_y_continuous(expand = c(0,0), limits = c(-10, 800)) +
-  theme_bw() +
-  scale_fill_manual(values = RColorBrewer::brewer.pal(n = 10, name = "RdYlBu")[c(6,7,8,9,10,5,4,3,2,1)]) +
-  #scale_fill_manual(values = RColorBrewer::brewer.pal(n = 10, name = "RdYlBu")[c(6,8,10,5,4,3,1)]) +
-  ggtitle("Turkish carrier frequency grouped by top 30 genes") +
-  #geom_text(data = text_data,aes(label = "*") ,size =4.5, position = position_stack(vjust = 0.5), color = "black") + 
-  theme(
-    panel.border = element_blank(),
-    panel.grid.minor = element_line(size = 0.5, colour = "grey"),
-    panel.grid.major = element_blank(),
-    plot.title = element_text(size = 18, hjust = 0.5, face = "bold"),
-    axis.line = element_line(size = 0.5, colour = "black"),
-    axis.title = element_text(size = 15, colour = "black"),
-    axis.text.y = element_text(size = 12, colour = "black"),
-    axis.text.x = element_text(size = 12, color = confidence_setting, angle = 315, vjust = 0.5, hjust = 0)
-  )
-
-```
-
-### Figure 6C Newest version plot : TR -----------------------------------
-
-```{r data preparation}
-
-#df_puta_filter_Summary_selected =temp_table_sillico_selected
-#df_puta_filter_Summary = temp_table_sillico
-
-temp_table_sillico_selected <- 
-  temp_table_sillico %>% 
-  dplyr::select(Genes, group) %>% 
-  group_by(Genes, group) %>% 
-  summarise(count = n()) %>% filter(Genes %in% gene_selected_TR_sillico)
-
-temp_table_selected <- 
-  temp_table%>% 
-  dplyr::select(Genes, group) %>% 
-  group_by(Genes, group) %>% 
-  summarise(count = n()) %>% filter(Genes %in% gene_selected_TR_silloco) 
-
-merge_df_TR <- left_join(temp_table_sillico_selected,temp_table_selected,by=c("Genes","group"))
-merge_df_TR[is.na(merge_df_TR)] <-0
-
-merge_df_TR_long <- melt(merge_df_TR,id.vars=c("Genes","group"))
-merge_df_TR_long[which(merge_df_TR_long$variable =="count.y"),]$value <- -(merge_df_TR_long[which(merge_df_TR_long$variable =="count.y"),]$value)
-```
-
-
-
-```{r plot: TR}
-confidence_setting <- ifelse(gene_selected_TR_silloco %in% High_genes$Genes, "dark blue", "black")
-merge_df_TR_long$group <- factor(merge_df_TR_long$group,levels = desired_levels)
-sillico_plot <- merge_df_TR_long %>% 
-  ggplot(aes(x = Genes, y = value, fill = group)) +
-  geom_bar(stat="identity", color = "white",alpha=0.9) +
-  ####sort the x axis by the order using scale_x_discrete()!!
-  scale_x_discrete(limits = gene_selected_TR_silloco) +
-  scale_y_continuous(expand = c(0,0), limits = c(-6, 50)) +
-  theme_bw() +
-  # scale_fill_manual(values = c("#91D1C2", "#00A087", "#8491B4",
-  #                              "#4DBBD5", "#E64B35")) +
-  scale_fill_manual(values = RColorBrewer::brewer.pal(n = 10, name = "RdYlBu")[c(6,7,8,9,10,5,4,3,2,1)]) +
-  ggtitle("TR Carrier frequency of pLOFs and p-risk variants") + 
-  geom_hline(yintercept=0)+
-  ylab("No.unique variant") + 
-  geom_text(data=subset(merge_df_TR_long,value !=0),mapping = aes(label = abs(value)), position = position_stack(vjust = 0.5))+
-  theme(
-    panel.border = element_blank(),
-    panel.grid.minor = element_line(size = 0.5, colour = "grey"),
-    panel.grid.major = element_blank(),
-    plot.title = element_text(size = 18, hjust = 0.5, face = "bold"),
-    axis.line = element_line(size = 0.5, colour = "black"),
-    axis.title = element_text(size = 15, colour = "black"),
-    axis.text.y = element_text(size = 12, colour = "black"),
-    axis.text.x = element_markdown(size = 12, colour = "black", angle = 315, vjust = 0.5, hjust = 0,color = confidence_setting)
-  )
-
-sillico_plot
-#ggsave(sillico_plot,filename = "/Users/xiyas/V2_Genome_reporting/Plots/Figure5E.pdf",width = 9,height = 6)
-```
-
-### Figure 6D Newest version plot : SW -----------------------------------
-```{r data preparation}
-#temp_table <- sorted_tab_SW_filter$sorted_tab_old_filter
-gene_counts_SW_silloco <- temp_table_sillico_SW %>%
-  group_by(Genes) %>%
-  summarise(Total_Freq = sum(Freq)) %>% arrange(desc(Total_Freq))
-
-gene_selected_SW_sillico = gene_counts_SW_silloco$Genes[1:30]
-#df_puta_filter_Summary_selected =temp_table_sillico_selected
-#df_puta_filter_Summary = temp_table_sillico
-
-temp_table_sillico_selected <- 
-  temp_table_sillico_SW %>% 
-  dplyr::select(Genes, group) %>% 
-  group_by(Genes, group) %>% 
-  summarise(count = n()) %>% filter(Genes %in% gene_selected_SW_sillico)
-
-temp_table_selected <- 
-  temp_table%>% 
-  dplyr::select(Genes, group) %>% 
-  group_by(Genes, group) %>% 
-  summarise(count = n()) %>% filter(Genes %in% gene_selected_SW_silloco) 
-
-merge_df_SW <- left_join(temp_table_sillico_selected,temp_table_selected,by=c("Genes","group"))
-merge_df_SW[is.na(merge_df_SW)] <-0
-
-merge_df_SW_long <- melt(merge_df_SW,id.vars=c("Genes","group"))
-merge_df_SW_long[which(merge_df_SW_long$variable =="count.y"),]$value <- -(merge_df_SW_long[which(merge_df_SW_long$variable =="count.y"),]$value)
-```
-
-```{r plot}
-confidence_setting <- ifelse(gene_selected_SW_silloco %in% High_genes$Genes, "dark blue", "black")
-merge_df_SW_long$group <- factor(merge_df_SW_long$group,levels = desired_levels)
-sillico_plot <- merge_df_SW_long %>% 
-  ggplot(aes(x = Genes, y = value, fill = group)) +
-  geom_bar(stat="identity", color = "white",alpha=0.9) +
-  ####sort the x axis by the order using scale_x_discrete()!!
-  scale_x_discrete(limits = gene_selected_SW_silloco) +
-  scale_y_continuous(expand = c(0,0), limits = c(-6, 50)) +
-  theme_bw() +
-  # scale_fill_manual(values = c("#91D1C2", "#00A087", "#8491B4",
-  #                              "#4DBBD5", "#E64B35")) +
-  #scale_fill_manual(values = RColorBrewer::brewer.pal(n = 10, name = "RdYlBu")[c(6,7,8,9,10,5,4,3,2,1)])
-  scale_fill_manual(values = RColorBrewer::brewer.pal(n = 10, name = "RdYlBu")[c(6,7,9,10,5,1)]) +
+# Print the data frame
+print(contingency_df)
+# Create a scatter plot with three variables
+ggplot(contingency_df, aes(x = Var3, y = Var2, size=Freq,color = Var1)) +
+  geom_point() +
+  geom_text(aes(label = Freq,size=200), vjust = -1.5) +
+  scale_color_manual(values = c("royalblue3", "indianred")) +  # Set custom colors for Z levels
+  labs(x = "X-Axis", y = "Y-Axis", color = "Z-Axis") +  # Set axis labels
+  facet_grid(. ~Var1) +
+  xlab("public AF")+ylab("in silico group")+
+  theme_minimal()
   
-  ggtitle("SW Carrier frequency of pLOFs and p-risk variants") + 
+
+puta_sorted_tab$CLIN_SIG <- sapply(strsplit(puta_sorted_tab$CLIN_SIG,"/"), `[`, 1)
+puta_sorted_tab$CLIN_SIG <- sapply(strsplit(puta_sorted_tab$CLIN_SIG,"&"), `[`, 1)
+puta_sorted_tab <- puta_sorted_tab %>% mutate(condition = case_when(Zygosity == "Homozygous" ~ "Positive",
+                             Genes %in% AD_genes & Zygosity == "Heterozygous" ~ "Positive",
+                             Genes %in% AR_genes & Zygosity == "Heterozygous" ~ "Carrier",
+                             TRUE ~ "Negative"))
+impact_High <- puta_sorted_tab%>%filter(group == "Impact_High(LoFs)")
+##singletons? 
+table(impact_High$Freq ==1 &impact_High$Zygosity =='Heterozygous')
+impact_High['Existing_variation'][impact_High['Existing_variation'] ==''] <-NA
+
+table(is.na(impact_High$Existing_variation))
+#singleton
+table(is.na(impact_High$Existing_variation) & impact_High$Freq ==1 &impact_High$Zygosity =='Heterozygous' )
+table(impact_High$Zygosity =='Homozygous')
+table(is.na(impact_High$Existing_variation) & impact_High$Zygosity =='Homozygous')
+
+##ACMG =======
+table(impact_High$final_target_group == 'Basic (for healthy subjects),Usually used for:Health predipositions/Disease risk')
+#table_2 <- impact_High[impact_High$final_target_group == 'Basic (for healthy subjects),Usually used for:Health predipositions/Disease risk',]
+ACMG_LoFs <- impact_High%>% 
+  filter(final_target_group == 'Basic (for healthy subjects),Usually used for:Health predipositions/Disease risk')
+table(is.na(ACMG_LoFs$Existing_variation))
+table(ACMG_LoFs$condition)
+ada_score
+dim(impact_High)
+
+
+# check overlaps
+group_variants <- list()
+# Loop through each group category
+for (group_category in unique(puta_sorted_tab$group)) {
+  group_variants[[group_category]] <- puta_sorted_tab %>%
+    filter(group == group_category) %>%
+    select(Variant_info) %>%
+    pull()
+}
+overlapping_variants <- Reduce(intersect, group_variants)
+
+# If you want to see the overlapping variants, you can print them:
+print(overlapping_variants)
+
+
+############grouped-pie-chart ============
+#####Separate the AD and AR genes and count by Positive/Negative/Carrier ---------
+groups <- c('Health predipositions','Carrier-screening','Newborn-screening','Heriditary-cancer risk syndrome')
+count_total <- c()
+KEY= 'Health predipositions'
+KEY = 'Carrier-screening'
+KEY= 'Health predipositions'
+KEY= 'Heriditary-cancer risk syndrome'
+KEY = "Newborn-screening"
+
+#----------df_clinvar for screening results --------
+for(KEY in groups){
+  AD_genes <- 
+    unique(
+      Summary_DB %>% filter(grepl(KEY,Target.group)) %>% 
+        filter(grepl("Autosomal dominant",inheritances))%>% 
+        .$Genes
+    )
+  AR_genes <- 
+    unique(
+      Summary_DB %>% filter(grepl(KEY,Target.group)) %>% 
+        filter(grepl("Autosomal recessive",inheritances))%>% 
+        .$Genes
+    )
+  aa <- 
+    df_clinvar_filter%>% filter(grepl(KEY,final_target_group)) %>%
+    mutate(condition = case_when(Zygosity == "Homozygous" ~ "Positive",
+                                 Genes %in% AD_genes & Zygosity == "Heterozygous" ~ "Positive",
+                                 Genes %in% AR_genes & Zygosity == "Heterozygous" ~ "Carrier",
+                                 TRUE ~ "Negative"))
+  aa_positive <- aa %>% filter(condition=="Positive")
+  ############### one patient the results only count one time 
+  count1 <- length(unique(aa%>% 
+                            filter(grepl("Positive",condition)) %>%.$patientID))
+  count2 <- length(unique(aa%>% 
+                            filter(grepl("Carrier",condition)) %>%.$patientID))
+  
+  ####count3 = 总人数-positive-carrier
+  count3 <- 101-count1-count2
+  
+  pp <- c(count1,count2,count3)
+  count_total <- append(count_total,pp)
+  #pie(c(count,100-count),labels = c("Carrier(n=39)","Non-Carrier(n=61)"),col = c("#F6AE2D", "#33658A"))
+}
+#########based on putative variants then too much --------------
+bb <- df_puta%>% filter(Genes %in% target_genes) %>%
+  mutate(condition = case_when(Genes %in% AD_genes ~ "Positive",
+                               Genes %in% AR_genes | Zygosity == "Homozygous" ~ "Positive",
+                               TRUE ~ "Negative"))
+
+unique(bb %>% filter(condition == "Positive") %>% .$patientID)
+
+####I just want to count the positive results patients vs total patients, based on clinvar variants
+##This I try with pie chart of different panels ------------------
+rm(test)
+library(ggplot2)
+
+####value <- count_total 
+test = data.frame(group <- c(rep('SF v3.1',3),rep('Carrier-screening',3),rep('Newborn-screening',3),
+                             rep('Heriditary-cancer risk syndrome',3)
+),
+condition <- rep(c('Positive','Carrier','Negative'),4),
+value <- count_total)
+
+test$subject <- factor(test$group)
+test$credit <- factor(test$condition) 
+
+mypal = pal_nejm("default", alpha = 0.9)(3)
+mypal
+mypal= c("#BC3C29E5","#E18727E5","#0072B5E5")
+test$condition <- factor(test$condition,levels =c("Positive","Carrier","Negative"))
+
+########figure of grouped bar plot --------
+ggplot(data=test, aes(x=" ", y=value, group=condition, colour=condition, fill=condition)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start=0) + 
+  facet_grid(.~ subject) +theme_void() +
+  scale_fill_manual(values= mypal)+theme_bw()+
+  theme(plot.title = element_text(size = 18, hjust = 0.5, face = "bold"),
+        legend.position = 'bottom')+
+  ggtitle("Patient screening status based on applying different gene panels")
+
+ggsave("/Users/xiyas/V2_Genome_reporting/Plots/Groupped_bar_chart_turkish_207.pdf",height = 6,width =11)
+
+
+######单个条形图 by gene panels #####
+##########test plot of bar plot for patients in separate panels--------------
+KEY= 'Health predipositions'
+KEY = 'Carrier-screening'
+KEY= 'Health predipositions'
+KEY= 'Heriditary-cancer risk syndrome'
+KEY = "Newborn-screening"
+
+###start count the Positive Negative and Carrier -----------
+###should not use genes, should use groups
+AD_genes <- 
+  unique(
+    Summary_DB %>% filter(grepl("Autosomal dominant",inheritances))%>% 
+      .$Genes
+  )
+AR_genes <- 
+  unique(
+    Summary_DB %>% filter(grepl("Autosomal recessive",inheritances))%>% 
+      .$Genes
+  )
+aa_2 <- 
+  df_clinvar_filter%>% filter(grepl(KEY,final_target_group)) %>%
+  mutate(condition = case_when(Zygosity == "Homozygous" ~ "Positive",
+                               Genes %in% AD_genes & Zygosity == "Heterozygous" ~ "Positive",
+                               Genes %in% AR_genes & Zygosity == "Heterozygous" ~ "Carrier",
+                               TRUE ~ "Negative"))
+#aa_positive_2 <- aa_2 %>% filter(condition=="Positive")
+
+aa_2 <-aa_2 %>% filter(!(condition == "Negative"))
+aa_2$value <- rep(1)
+aa_2 <- aa_2[!duplicated(aa[c("Genes","patientID")]),]
+
+aa_2$paste.name <- paste(aa_2$Genes,"-",aa_2$Disease)
+
+aa_2 %>% 
+  ggplot(aes(x = reorder(paste.name,-value), y = value, fill = condition)) +
+  geom_bar(stat="identity", color = "white",alpha=0.9) +
+  #scale_x_discrete(limits = new_select) +
+  scale_y_continuous(expand = c(0,0), limits = c(0, 6)) +
+  theme_bw() +
+  # scale_fill_manual(values = c("#91D1C2", "#00A087", "#8491B4",
+  #                              "#4DBBD5", "#E64B35")) +
+  scale_fill_manual(values = c("#FFB90F","#A52A2A")) +
+  ggtitle("test") + 
   geom_hline(yintercept=0)+
-  ylab("No.unique variant") + 
-  geom_text(data=subset(merge_df_SW_long,value !=0),mapping = aes(label = abs(value)), position = position_stack(vjust = 0.5))+
+  #geom_text(data=subset(aa,value !=0),mapping = aes(label = abs(value)), position = position_stack(vjust = 0.5))+
   theme(
     panel.border = element_blank(),
     panel.grid.minor = element_line(size = 0.5, colour = "grey"),
@@ -1147,22 +551,19 @@ sillico_plot <- merge_df_SW_long %>%
     axis.line = element_line(size = 0.5, colour = "black"),
     axis.title = element_text(size = 15, colour = "black"),
     axis.text.y = element_text(size = 12, colour = "black"),
-    axis.text.x = element_markdown(size = 12, colour = "black", angle = 315, vjust = 0.5, hjust = 0,color = confidence_setting)
+    axis.text.x = element_text(size = 8, colour = "black", angle = 90, hjust =1,vjust = 0.5)
   )
-print(sillico_plot)
-#ggsave(sillico_plot,filename = "/Users/xiyas/V2_Genome_reporting/Plots/Figure5F.pdf",width = 9,height = 6)
 
-```
 
-# 10. Case report
-```{r}
+ggsave("/Users/xiyas/V2_Genome_reporting/Plots/Gene_variant.1.2.disease.pdf",height = 12,width =9)
+
+
 ####Case report =========
-P001_106 <-clinvar_TR_filter[clinvar_TR_filter$patientID == "P001_106.hard-filtered.vcf.gz_vep_annotated.vcf_outFile_sp_Inheritance_4_nodup.txt",]
-P001_85 <- clinvar_TR_filter[clinvar_TR_filter$patientID == "P001_85.hard-filtered.vcf.gz_vep_annotated.vcf_outFile_sp_Inheritance_4_nodup.txt",]
-P001_96 <- clinvar_TR_filter[clinvar_TR_filter$patientID == "P001_96.hard-filtered.vcf.gz_vep_annotated.vcf_outFile_sp_Inheritance_4_nodup.txt",]
+P001_106 <-df_clinvar_filter[df_clinvar_filter$patientID == "P001_106.hard-filtered.vcf.gz_vep_annotated.vcf_outFile_sp_Inheritance_4_nodup.txt",]
+P001_85 <- df_clinvar_filter[df_clinvar_filter$patientID == "P001_85.hard-filtered.vcf.gz_vep_annotated.vcf_outFile_sp_Inheritance_4_nodup.txt",]
+P001_96 <- df_clinvar_filter[df_clinvar_filter$patientID == "P001_96.hard-filtered.vcf.gz_vep_annotated.vcf_outFile_sp_Inheritance_4_nodup.txt",]
 
-P001_106_more <-clinvar_TR[clinvar_TR$patientID == "P001_106.hard-filtered.vcf.gz_vep_annotated.vcf_outFile_sp_Inheritance_4_nodup.txt",]
-P001_85_more <- clinvar_TR[clinvar_TR$patientID == "P001_85.hard-filtered.vcf.gz_vep_annotated.vcf_outFile_sp_Inheritance_4_nodup.txt",]
-P001_96_more <- clinvar_TR[clinvar_TR$patientID == "P001_96.hard-filtered.vcf.gz_vep_annotated.vcf_outFile_sp_Inheritance_4_nodup.txt",]
+P001_106_more <-df_clinvar[df_clinvar$patientID == "P001_106.hard-filtered.vcf.gz_vep_annotated.vcf_outFile_sp_Inheritance_4_nodup.txt",]
+P001_85_more <- df_clinvar[df_clinvar$patientID == "P001_85.hard-filtered.vcf.gz_vep_annotated.vcf_outFile_sp_Inheritance_4_nodup.txt",]
+P001_96_more <- df_clinvar[df_clinvar$patientID == "P001_96.hard-filtered.vcf.gz_vep_annotated.vcf_outFile_sp_Inheritance_4_nodup.txt",]
 
-```

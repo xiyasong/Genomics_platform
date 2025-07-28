@@ -8,43 +8,90 @@
 
 # Function to read files and process data -----------------
 read_and_process_files <- function(path, population) {
-  setwd(path)
-  files <- list.files(path = path, pattern = "_4_nodup.txt")
+  # Set working directory (optional, but ensure path is correct)
+  if (!dir.exists(path)) stop("Directory does not exist: ", path)
+  # List all files ending with '_4_nodup.txt'
+  files <- list.files(path = path, pattern = "_4_nodup\\.txt$", full.names = TRUE)
+  if (length(files) == 0) stop("No files matching '_4_nodup.txt' found in: ", path)
+  # Read each file and standardize columns
   list_temp <- lapply(files, function(file) {
-    temp <- read.delim(file)
-    # [per-sample] level unique varaints
-    temp <- temp[!duplicated(temp$SZAID), ]
-    temp$patientID <- rep(file)
-    colnames(temp)[26] <- "Sample"
+    temp <- read.delim(file, stringsAsFactors = FALSE)
+    # Ensure 'SZAID' exists (avoid errors if column is missing)
+    if (!"SZAID" %in% colnames(temp)) {
+      warning("File '", basename(file), "' is missing column 'SZAID'. Skipping deduplication.")
+    } else {
+      temp <- temp[!duplicated(temp$SZAID), ]  # Deduplicate by SZAID
+    }
+    
+    # Add metadata columns
+    temp$patientID <- basename(file)  # Use basename() to avoid full paths
     temp$Population <- population
+    
+    # Rename column 26 to 'Sample' (if it exists)
+    if (ncol(temp) >= 26) {
+      colnames(temp)[26] <- "Sample"
+    } else {
+      warning("File '", basename(file), "' has fewer than 26 columns. 'Sample' not assigned.")
+    }
+    
     return(temp)
   })
-  return(do.call(rbind, list_temp))
+  
+  # Standardize columns across all data frames before binding
+  all_cols <- unique(unlist(lapply(list_temp, colnames)))
+  list_temp_std <- lapply(list_temp, function(df) {
+    missing_cols <- setdiff(all_cols, colnames(df))
+    if (length(missing_cols) > 0) {
+      df[missing_cols] <- NA  # Fill missing columns with NA
+    }
+    return(df)
+  })
+  
+  # Combine all data frames
+  final_df <- do.call(rbind, list_temp_std)
+  return(final_df)
 }
+
 
 # Function to keep the first pathogenicity data,add condition judgement, rm chrM etc -----------------
 customize_temp_data <- function(data) {
-  #cols <- c("X.CHROM", "POS", "Genotype")
-  cols <- c("X.CHROM", "POS", "REF",'ALT')
-  #sillico_pLoFs_TR$SZAID_assign <- apply(sillico_pLoFs_TR[, cols], 1, paste, collapse = "-")
+  # Basic columns to create Variant_info
+  cols <- c("X.CHROM", "POS", "REF", "ALT")
+  
+  # Clean up POS and generate variant ID
   data$POS <- gsub(" ", "", data$POS)
   data$Variant_info <- apply(data[, cols], 1, paste, collapse = "-")
+  
+  # Clean up annotation columns
   data$ClinVar_CLNSIG <- sapply(strsplit(data$ClinVar_CLNSIG, "&"), `[`, 1)
   data$ClinVar_CLNSIG <- sapply(strsplit(data$ClinVar_CLNSIG, "/"), `[`, 1)
   data$Consequence <- sapply(strsplit(data$Consequence, "&"), `[`, 1)
+  
+  # Filter out mitochondrial chromosome
   data <- data %>% filter(X.CHROM != 'chrM')
+  
+  # Determine condition based on Inheritances and Zygosity
   data <- data %>%
-    mutate(condition = case_when(Zygosity == "Homozygous" ~ "Positive",
-                                 Genes %in% AD_genes & Zygosity == "Heterozygous" ~ "Positive",
-                                 Genes %in% AR_genes & Zygosity == "Heterozygous" ~ "Carrier",
-                                 TRUE ~ "Unsure"))
+    mutate(
+      condition = case_when(
+        grepl("recessive", Inheritances, ignore.case = TRUE) & Zygosity == "Homozygous" ~ "Positive",
+        grepl("recessive", Inheritances, ignore.case = TRUE) & Zygosity == "Heterozygous" ~ "Carrier",
+        grepl("dominant", Inheritances, ignore.case = TRUE) & Zygosity == "Heterozygous" ~ "Positive",
+        TRUE ~ "Unsure"
+      )
+    )
+  
+  # Determine MAX_AF category
   data <- data %>%
-    mutate(MAX_AF_Category = case_when(
-      is.na(MAX_AF) ~ "No public MAX_AF",
-      MAX_AF < 0.01 ~ "Public MAX_AF < 0.01",
-      (0.01 < MAX_AF) & (MAX_AF < 0.05) ~ "0.01 < Public MAX_AF < 0.05",
-      MAX_AF >= 0.05 ~ "Public MAX_AF >= 0.05"
-    ))
+    mutate(
+      MAX_AF_Category = case_when(
+        is.na(MAX_AF) ~ "No public MAX_AF",
+        MAX_AF < 0.01 ~ "Public MAX_AF < 0.01",
+        (0.01 <= MAX_AF) & (MAX_AF < 0.05) ~ "0.01 <= Public MAX_AF < 0.05",
+        MAX_AF >= 0.05 ~ "Public MAX_AF >= 0.05"
+      )
+    )
+  
   return(data)
 }
 
@@ -71,19 +118,6 @@ get_other_sillico_pLoFs <- function(data){
   return(data)
 }
 
-# Function to process ACMG 78 genes findings-----------------
-get_ACMG_findings <- function(data) {
-  data <- get_P_LP_LoFs(data)
-  data <- data %>% filter(final_target_group == 'Basic (for healthy subjects),Usually used for:Health predipositions/Disease risk')
-  return(data)
-}
-
-# [Cohort-level] unique variants ------------------
-get_unique_SZAID <- function(data) {
-  data <- data[!duplicated(data$SZAID), ]
-  return(data)
-}
-
 # for novel pLoFs that do not have SZAID --------------
 get_unique_variants <- function(data) {
   data <- data[!duplicated(data$Variant_info), ]
@@ -93,37 +127,6 @@ get_unique_variants <- function(data) {
 #  functions to get sorted_tab --------------
 library(dplyr)
 
-get_sorted_tab <- function(data, unique_data) {
-  sorted_tab <- data %>%
-    group_by(SZAID, Zygosity) %>%
-    summarise(count = n()) %>%
-    arrange(desc(count)) %>%
-    merge(unique_data, by = 'SZAID', all.x = TRUE)
-  
-  sorted_tab_old <- data %>%
-    group_by(SZAID) %>%
-    summarise(Freq = n()) %>%
-    arrange(desc(Freq)) %>%
-    merge(unique_data, by = 'SZAID', all.x = TRUE) 
-  
-  return(list(sorted_tab = sorted_tab, sorted_tab_old = sorted_tab_old))
-}
-
-get_sorted_tab_sillico <- function(data, unique_data) {
-  sorted_tab_sillico <- data %>%
-    group_by(Variant_info, Zygosity) %>%
-    summarise(count = n()) %>%
-    arrange(desc(count)) %>%
-    merge(unique_data, by = 'Variant_info', all.x = TRUE)
-  
-  sorted_tab_old_sillico <- data %>%
-    group_by(Variant_info) %>%
-    summarise(Freq = n()) %>%
-    arrange(desc(Freq)) %>%
-    merge(unique_data, by = 'Variant_info', all.x = TRUE) 
-  
-  return(list(sorted_tab_sillico = sorted_tab_sillico, sorted_tab_old_sillico = sorted_tab_old_sillico))
-}
 
 read_GWAS <- function(path) {
   setwd(path)
@@ -147,3 +150,4 @@ read_pharmaco <- function(path) {
   })
   return(do.call(rbind, list_temp))
 }
+

@@ -1,5 +1,5 @@
 # Process Turkish data -----------------
-df_temp_turkish <- read_and_process_files("/Users/xiyas/V2_Genome_reporting/python_output_turkish_275/nodup4_file", "Turkish")
+df_temp_turkish <- read_and_process_files("/Users/xiyas/V2_Genome_reporting/python_results_TR_275_2025", "Turkish")
 df_temp_turkish <- customize_temp_data(df_temp_turkish)
 
 clinvar_TR <- get_clinvar_variants(df_temp_turkish)
@@ -25,7 +25,7 @@ sorted_tab_TR_sillico <- get_sorted_tab_sillico(sillico_pLoFs_TR, sillico_pLoFs_
 # sillico no need to fileter
 
 # Process Swedish data -----------------
-df_temp_swedish <- read_and_process_files("/Users/xiyas/V2_Genome_reporting/python_output_swedish_101/nodup4_file", "Swedish")
+df_temp_swedish <- read_and_process_files("/Users/xiyas/V2_Genome_reporting/python_results_SW_101_2025", "Swedish")
 df_temp_swedish <- customize_temp_data(df_temp_swedish)
 
 clinvar_SW <- get_clinvar_variants(df_temp_swedish)
@@ -52,3 +52,15 @@ combined_sillico_df <- rbind(sillico_pLoFs_TR,sillico_pLoFs_SW)
 #write.table(combined_df,file = "combined_df_clinvar.txt",quote = FALSE,col.names = FALSE,sep = "\t")
 #combined_df$Population <- factor(combined_df$Population, levels = c("Turkish", "Swedish"))
 #clinvar_genes_count_combined <- rbind(clinvar_genes_count_turkish, clinvar_genes_count_swedish)
+
+# GWAS and Pharmaco data (TR,SW) -----------------
+GWAS_TR <- read_files_GWAS("/Users/xiyas/V2_Genome_reporting/GWAS_results_TR", "Turkish")
+GWAS_SW <- read_files_GWAS("/Users/xiyas/V2_Genome_reporting/GWAS_results_SW", "Swedish")
+combined_GWAS <- rbind(GWAS_TR,GWAS_SW)
+
+Pharmaco_TR <- read_files_PGx("/Users/xiyas/V2_Genome_reporting/PGx_results_TR/", "Turkish")
+Pharmaco_TR <- Pharmaco_TR %>% filter(Level.of.Evidence != '4')
+Pharmaco_SW <- read_files_PGx("/Users/xiyas/V2_Genome_reporting/PGx_results_SW/", "Swedish")
+Pharmaco_SW <- Pharmaco_SW %>% filter(Level.of.Evidence != '4')
+combined_pharmaco <- rbind(Pharmaco_TR,Pharmaco_SW)
+
