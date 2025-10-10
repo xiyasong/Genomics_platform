@@ -1,6 +1,30 @@
 # Analysis of CNV and SV files for Patient P00422
 
-This document summarizes the analysis of the `.cnv.vcf` and `.sv.vcf` files to verify the presence of two reported structural variants.
+The translation from Russian report that saying the patient's diseases:
+- 1. Chromosome 9p24.3–p23 Microdeletion
+	•	Genomic location (GRCh38): chr9: 0–13,587,692
+	•	Type: Heterozygous microdeletion
+	•	Size: ~13.6 Mb
+	•	Copy number: 1 (loss)
+	•	Affected genes include: DOCK8, KANK1, SMARCA2, VLDLR, KCNV2, GLIS3, SLC1A1, JAK2, CD274, RIC1, GLDC
+	•	Associated syndrome: Chromosome 9p deletion syndrome (OMIM 158170)
+	•	Clinical description: This syndrome is typically associated with global developmental delay, intellectual disability, craniofacial dysmorphism, and sometimes structural brain or heart abnormalities.
+	•	Interpretation: Classified as pathogenic and considered the most likely cause of the patient’s clinical presentation.
+
+
+- 2. Chromosome 10q25.1–q26.3 Microduplication
+	•	Genomic location (GRCh38): chr10: 107,558,240–133,797,422
+	•	Type: Heterozygous microduplication
+	•	Size: ~26.2 Mb
+	•	Copy number: 3 (gain)
+	•	Affected genes include: ACADSB, FGFR2, HTRA1, SHOC2, TCF7L2, WDR11, BAG3, EMX2, GFRA1, MXI1, VAX1, and others
+	•	Associated syndrome: Distal duplication 10q syndrome
+	•	Clinical description: Usually linked to developmental delay, growth retardation, abnormal muscle tone, facial and organ malformations, and neurodevelopmental abnormalities.
+	•	Interpretation: Classified as pathogenic and also considered a likely cause of the patient’s phenotype.
+"
+
+
+Here, I summarizes the query of the `.cnv.vcf` and `.sv.vcf` files to verify the presence of two reported structural variants.
 
 ## 1. Chromosome 9p24.3–p23 Microdeletion
 
