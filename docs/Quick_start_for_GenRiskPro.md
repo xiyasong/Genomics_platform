@@ -1,6 +1,8 @@
 # **Quick start**
 **GenRiskPro: A Webserver for Generating Clinical and Wellness Reports from NGS Data**  
 
+Test users who **only want to analyze a single sample** and do not need to manage it within a project can upload their data and obtain results directly from this page:https://www.phenomeportal.org/generisk.
+This version does not require an account login.
 
 ## Introduction
 
@@ -11,11 +13,12 @@ The server generates detailed variant annotations by leveraging extensively vali
 
 ## **Submit jobs**
 
-Users are required to sign up with a personal email address to start analysis for sensitive genome data. GenRiskPro currently only accepts files in the vcf format. 
 
-Users can also play with the example file without login. 
+<img width="1709" height="969" alt="image" src="https://github.com/user-attachments/assets/3c19de5d-1335-47e2-bb02-5b048eb0ff9f" />
 
-![image](https://github.com/user-attachments/assets/8c758e1f-cb59-4c77-b3d5-b202b3abd10c)
+## **Other functions are the same as the Dashboard Version**]
+
+<img width="1242" height="872" alt="image" src="https://github.com/user-attachments/assets/17fce074-47cd-451c-9d4c-f8931840fe61" />
 
 
 **References:**
