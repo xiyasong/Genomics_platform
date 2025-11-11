@@ -6,10 +6,7 @@ nav:
   - Home: index.md
   - Quick Start for GenRiskPro Platform (Cohort Analysis): GenRiskPro_Dashboard_tutorial.md
   - Quick Start for GenRiskPro Web-server (Single Sample): Quick_start_for_GenRiskPro.md
-  - Quick Start for BabyGenePro: Quick_start_for_BabyGenePro.md
-  - Quick Start for OncoRiskPro: Quick_start_for_OncoRiskPro.md
   - In-house Reference Panel: In-house_Reference_Panel.md
-  - Result Filtration and Export: Result_filtration_and_export.md
 
 theme:
   name: material
