@@ -5,6 +5,7 @@
 This tool is used as a "blueprint" of all variants that found in the in-house uploaded sequencing samples. The webpage mainly including two sections:
 - The **SNPs** in-house allele frequencies that dynamically calculated from all the uploaded samples.
 - The **CNV/SVs** searching functions, that allow users to find a specific genomic regions, checking the CNVs/SVs records that existed in the uploaded samples.
+<img width="1695" height="899" alt="image" src="https://github.com/user-attachments/assets/5fc2a2c6-7c4a-4377-91bb-62139ebd3fe6" />
 
 ## Quick start
 
