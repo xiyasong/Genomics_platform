@@ -1,7 +1,7 @@
 # GenRiskPro Dashboard - Multi-Sample Platform Version
 
 - This is the platform version of GenRiskPro for **multi-sample/cohort-based upload, management, analysis and reporting**. 
-
+- The entry of GenRiskPro Dashboard now is integrated as "XOmics Portal", with the same address https://www.phenomeportal.org/dashboard
 - Compared to the web-server version, this platform is designed for research facilities, hospitals, and health organizations requiring cohort-based genomic management and reporting.
 
 - The specific features including a full glance of all data inside the cohort (including the TR and SW).
