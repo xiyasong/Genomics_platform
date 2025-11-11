@@ -16,9 +16,10 @@ The server generates detailed variant annotations by leveraging extensively vali
 
 <img width="1709" height="969" alt="image" src="https://github.com/user-attachments/assets/3c19de5d-1335-47e2-bb02-5b048eb0ff9f" />
 
-## **Other functions are the same as the Dashboard Version**]
+## **Other functions are the same as the Dashboard Version**
 
 <img width="1242" height="872" alt="image" src="https://github.com/user-attachments/assets/17fce074-47cd-451c-9d4c-f8931840fe61" />
+<img width="362" height="382" alt="image" src="https://github.com/user-attachments/assets/7b3be0db-f0c3-4a87-b79f-73ba8d753924" />
 
 
 **References:**
