@@ -1,9 +1,18 @@
 # Home
-This is the tutorial page for the **GenRiskPro platform**, single-sample web-server version of  **GenRiskPro**, and two other extra web-server interface **BabySeqPro** and **OncoRiskPro**.
 
+This is the tutorial page for the **GenRiskPro platform**, which can be accessed as follows:
+
+1) Log in at https://www.phenomeportal.org/dashboard using the following credentials:  
+**Username:** user@test.com  
+**Password:** test  
+
+After logging in, the full project-based management system, including the TR and SW cohort data from the paper’s case studies, is available for review.
+
+2) The simplified uploading page (web server version), which uses the same analysis pipeline and downstream interface as **GenRiskPro**, is **fully open** access and available at:  
+https://www.phenomeportal.org/genriskpro
 
 ## Platform Overview
-<img width="958" height="716" alt="image" src="https://github.com/user-attachments/assets/fdc5ffa9-cdd3-48f3-ae07-b587ef7a04ff" />
+<img width="1121" height="856" alt="image" src="https://github.com/user-attachments/assets/ce631f68-276f-444f-99de-8ffe80069b84" />
 
 
 GenRiskPro is a comprehensive platform designed to streamline end-to-end whole genome sequencing (WGS) data processing, variant prioritization and interpretation, and personalized reporting of clinical and wellness findings to sequenced individuals. By facilitating collaborative engagement among hospitals, clinicians, genomic research facilities, and patients through this cloud-based platform, it directly supports the implementation of precision medicine across diverse populations. Thus, the platform represents a significant step toward digital health for each individual by integrating their genomic data into actionable outcomes.
@@ -20,14 +29,34 @@ GenRiskDB supports exportable, comprehensive genomic reporting across four categ
 
 ## Table of Contents
 
-1. **[Quick Start for GenRiskPro Platform (Cohort Analysis)](GenRiskPro_Dashboard_tutorial.md)**
-Multi-sample/cohort-based analysis platform for research facilities and healthcare organizations
+## Table of Contents
 
-2. **[Quick Start for GenRiskPro Web-server (Single Sample)](Quick_start_for_GenRiskPro.md)**
-Individual sample analysis using the web-based interface
+### 1. [Quick Start for GenRiskPro Platform (Cohort Analysis, Project-based Uploading, and Case Studies of the TR and SW Cohorts)](GenRiskPro_Dashboard_tutorial.md)
 
-3. **[In-house Reference Panel](In-house_Reference_Panel.md)**
-Guidelines for using In-house reference panel to explore the allele frequencies of the new sequenced cohorts.
+Multi-sample and cohort-based analysis platform for research facilities and healthcare organizations.
+
+Log in at:  
+https://www.phenomeportal.org/dashboard  
+
+**Username:** user@test.com  
+**Password:** test  
+
+
+---
+
+### 2. [Quick Start for GenRiskPro Web Server (Single Sample and Simplified Web Server Version with the Same Analysis Pipeline)](Quick_start_for_GenRiskPro.md)
+
+Individual sample analysis using the web-based interface.
+
+**Fully open access** and available at:  
+https://www.phenomeportal.org/genriskpro  
+
+
+---
+
+### 3. [In-house Reference Panel](In-house_Reference_Panel.md)
+
+Guidelines for using the in-house reference panel to explore allele frequencies in newly sequenced cohorts.
 
 
 ---
