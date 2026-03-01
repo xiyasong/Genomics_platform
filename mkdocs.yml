@@ -4,8 +4,8 @@ site_url: "https://xiyasong.github.io/Genomics_platform"
 
 nav:
   - Home: index.md
-  - Quick Start for GenRiskPro Platform (Cohort Analysis): GenRiskPro_Dashboard_tutorial.md
-  - Quick Start for GenRiskPro Web-server (Single Sample): Quick_start_for_GenRiskPro.md
+  - Quick Start for GenRiskPro Platform (Cohort Analysis & Case studies): GenRiskPro_Dashboard_tutorial.md
+  - Quick Start for GenRiskPro Web-server (Easy uploading samples): Quick_start_for_GenRiskPro.md
   - In-house Reference Panel: In-house_Reference_Panel.md
 
 theme:
