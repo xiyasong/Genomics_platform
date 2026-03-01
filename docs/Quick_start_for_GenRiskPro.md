@@ -3,7 +3,8 @@
 
 This version does not require an account login and is **fully free accessible**.
 
-Test users who **only want to analyze a single sample** and do not need to manage it within a project can upload their data and obtain results directly from this page:https://www.phenomeportal.org/genriskpro
+Test users who **only want to analyze a single sample** and do not need to manage it within a project can upload their data and obtain results directly.
+The resource is accessible via this page:https://www.phenomeportal.org/genriskpro
 
 ## Introduction
 
