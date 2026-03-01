@@ -26,9 +26,6 @@ Despite significant advances in WGS technology, clinical adoption remains limite
 GenRiskDB supports exportable, comprehensive genomic reporting across four categories: clinical risk variants, pharmacogenomic variants, GWAS variants, and lifestyle-trait variants. The web portal’s two-tiered reporting system balances automation with clinical oversight, enabling refined variant curation prior to patient delivery. The mobile application empowers individuals to better understand their genetic data and make informed health decisions, while preserving professional clinical supervision.
 
 
-
-## Table of Contents
-
 ## Table of Contents
 
 ### 1. [Quick Start for GenRiskPro Platform (Cohort Analysis, Project-based Uploading, and Case Studies of the TR and SW Cohorts)](GenRiskPro_Dashboard_tutorial.md)
