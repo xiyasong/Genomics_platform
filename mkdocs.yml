@@ -1,5 +1,5 @@
-site_name: "Genomics Platform Documentation"
-site_description: "Tutorials and documentation for Genomics Platform (GenRiskPro, BabyGenePro, and OncoRiskPro)"
+site_name: "GenRiskPro Platform Documentation"
+site_description: "Tutorials and documentation for GenRiskPro."
 site_url: "https://xiyasong.github.io/Genomics_platform"
 
 nav:
