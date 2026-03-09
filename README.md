@@ -3,7 +3,7 @@
    
 ## Overview
 
-A repository for the preparing manuscript "A platform/webserver for genomic data analysis, reporting, and interpretation"
+A repository for the paper "GenRiskPro: A Comprehensive Whole-Genome Sequencing Analysis Platform for Clinical and Wellness Applications"
 
 ------------------------------------------------------------------------
 
